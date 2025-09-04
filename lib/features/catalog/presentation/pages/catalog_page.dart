@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../shared/models/product.dart';
-import '../../../../shared/providers/app_providers.dart';
-import '../../../../shared/services/auth_service.dart';
-import '../../../../shared/services/product_service.dart';
 import '../../../../shared/widgets/product_card.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../domain/entities/product_entity.dart';
+import '../providers/product_providers.dart';
 
 class CatalogPage extends ConsumerStatefulWidget {
   const CatalogPage({super.key});
@@ -65,7 +64,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
-              await AuthService.signOut();
+              await ref.read(signOutUseCaseProvider).call();
               if (mounted) context.go('/login');
             },
             tooltip: 'Déconnexion',
@@ -246,7 +245,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: selectedCategory,
+                initialValue: selectedCategory,
                 decoration: const InputDecoration(
                   labelText: 'Catégorie',
                   border: OutlineInputBorder(),
@@ -275,7 +274,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
               if (titleController.text.isNotEmpty &&
                   priceController.text.isNotEmpty) {
                 try {
-                  final product = Product(
+                  final product = ProductEntity(
                     id: '', // Sera généré par Firestore
                     title: titleController.text,
                     price: double.parse(priceController.text),
@@ -288,7 +287,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                     stock: 10,
                   );
 
-                  await ProductService.createProduct(product);
+                  await ref.read(createProductUseCaseProvider).call(product);
 
                   if (mounted) {
                     Navigator.of(context).pop();

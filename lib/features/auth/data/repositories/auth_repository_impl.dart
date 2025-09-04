@@ -1,0 +1,51 @@
+import '../../domain/entities/user_entity.dart';
+import '../../domain/repositories/auth_repository.dart';
+import '../datasources/auth_remote_datasource.dart';
+
+class AuthRepositoryImpl implements AuthRepository {
+  final AuthRemoteDataSource _remoteDataSource;
+
+  AuthRepositoryImpl({required AuthRemoteDataSource remoteDataSource})
+      : _remoteDataSource = remoteDataSource;
+
+  @override
+  Stream<UserEntity?> get authStateChanges {
+    return _remoteDataSource.authStateChanges.map((user) => user?.toEntity());
+  }
+
+  @override
+  UserEntity? get currentUser {
+    return _remoteDataSource.currentUser?.toEntity();
+  }
+
+  @override
+  Future<UserEntity> signInWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
+    final user = await _remoteDataSource.signInWithEmailAndPassword(
+      email,
+      password,
+    );
+    return user.toEntity();
+  }
+
+  @override
+  Future<UserEntity> createUserWithEmailAndPassword(
+    String email,
+    String password,
+    String displayName,
+  ) async {
+    final user = await _remoteDataSource.createUserWithEmailAndPassword(
+      email,
+      password,
+      displayName,
+    );
+    return user.toEntity();
+  }
+
+  @override
+  Future<void> signOut() {
+    return _remoteDataSource.signOut();
+  }
+}

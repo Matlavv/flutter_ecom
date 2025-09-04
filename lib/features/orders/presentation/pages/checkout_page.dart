@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../shared/models/cart_item.dart';
-import '../../../../shared/providers/app_providers.dart';
-import '../../../../shared/services/cart_service.dart';
-import '../../../../shared/services/order_service.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../cart/domain/entities/cart_item_entity.dart';
+import '../../../cart/presentation/providers/cart_providers.dart';
+import '../providers/order_providers.dart';
 
 class CheckoutPage extends ConsumerStatefulWidget {
   const CheckoutPage({super.key});
@@ -111,7 +111,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   }
 
   Widget _buildOrderSummary(
-    List<CartItem> cartItems,
+    List<CartItemEntity> cartItems,
     AsyncValue<double> cartTotalAsync,
   ) {
     return Card(
@@ -281,7 +281,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   }
 
   Widget _buildOrderButton(
-    List<CartItem> cartItems,
+    List<CartItemEntity> cartItems,
     AsyncValue<double> cartTotalAsync,
     user,
   ) {
@@ -303,7 +303,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   }
 
   Future<void> _processOrder(
-    List<CartItem> cartItems,
+    List<CartItemEntity> cartItems,
     AsyncValue<double> cartTotalAsync,
     user,
   ) async {
@@ -320,27 +320,28 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         error: (_, __) => 0.0,
       );
 
-      final paymentSuccess = await OrderService.simulatePayment(
-        cardNumber: _cardNumberController.text,
-        expiryDate: _expiryController.text,
-        cvv: _cvvController.text,
-        amount: total,
-      );
+      final paymentSuccess =
+          await ref.read(orderRepositoryProvider).simulatePayment(
+                cardNumber: _cardNumberController.text,
+                expiryDate: _expiryController.text,
+                cvv: _cvvController.text,
+                amount: total,
+              );
 
       if (!paymentSuccess) {
         throw Exception('Paiement refusé. Veuillez vérifier vos informations.');
       }
 
       // Créer la commande
-      final orderId = await OrderService.createOrder(
-        userId: user.id,
-        items: cartItems,
-        shippingAddress: _addressController.text,
-        paymentMethod: 'Carte bancaire',
-      );
+      final orderId = await ref.read(createOrderUseCaseProvider).call(
+            userId: user.id,
+            items: cartItems,
+            shippingAddress: _addressController.text,
+            paymentMethod: 'Carte bancaire',
+          );
 
       // Vider le panier
-      await CartService.clearCart();
+      await ref.read(cartRepositoryProvider).clearCart();
       ref.invalidate(cartItemsProvider);
       ref.invalidate(cartTotalProvider);
 

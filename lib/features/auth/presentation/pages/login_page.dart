@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../shared/services/auth_service.dart';
+import '../providers/auth_providers.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -34,16 +34,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     try {
       if (_isSignUp) {
-        await AuthService.createUserWithEmailAndPassword(
-          _emailController.text.trim(),
-          _passwordController.text,
-          _displayNameController.text.trim(),
-        );
+        await ref.read(signUpUseCaseProvider).call(
+              _emailController.text.trim(),
+              _passwordController.text,
+              _displayNameController.text.trim(),
+            );
       } else {
-        await AuthService.signInWithEmailAndPassword(
-          _emailController.text.trim(),
-          _passwordController.text,
-        );
+        await ref.read(signInUseCaseProvider).call(
+              _emailController.text.trim(),
+              _passwordController.text,
+            );
       }
 
       if (mounted) {

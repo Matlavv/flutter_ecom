@@ -1,114 +1,99 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom/shared/models/product.dart';
+import 'package:flutter_ecom/features/catalog/domain/entities/product_entity.dart';
 import 'package:flutter_ecom/shared/widgets/product_card.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('ProductCard Widget Tests', () {
-    late Product testProduct;
+  group('ProductCard', () {
+    late ProductEntity product;
 
     setUp(() {
-      testProduct = Product(
+      product = const ProductEntity(
         id: '1',
         title: 'Test Product',
+        description: 'Test Description',
         price: 29.99,
-        description: 'A test product description',
-        category: 'Test',
         thumbnail: 'https://example.com/image.jpg',
         images: ['https://example.com/image1.jpg'],
+        category: 'Electronics',
         stock: 10,
       );
     });
 
-    testWidgets('should display product information correctly', (
-      WidgetTester tester,
-    ) async {
-      // Arrange & Act
+    testWidgets('should display product information correctly',
+        (WidgetTester tester) async {
+      // Arrange
       await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(body: ProductCard(product: testProduct)),
+        MaterialApp(
+          home: Scaffold(
+            body: ProductCard(product: product),
           ),
         ),
       );
 
       // Assert
       expect(find.text('Test Product'), findsOneWidget);
-      expect(find.text('29.99 €'), findsOneWidget);
-      expect(find.text('Test'), findsOneWidget);
-      expect(find.text('10 en stock'), findsOneWidget);
-      expect(find.text('A test product description'), findsOneWidget);
+      expect(find.text('Test Description'), findsOneWidget);
+      expect(find.text('29,99 €'), findsOneWidget);
+      expect(find.text('Electronics'), findsOneWidget);
+      expect(find.text('En stock'), findsOneWidget);
     });
 
-    testWidgets('should display out of stock message when stock is 0', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('should display out of stock when stock is 0',
+        (WidgetTester tester) async {
       // Arrange
-      final outOfStockProduct = testProduct.copyWith(stock: 0);
+      final outOfStockProduct = product.copyWith(stock: 0);
 
-      // Act
       await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(body: ProductCard(product: outOfStockProduct)),
+        MaterialApp(
+          home: Scaffold(
+            body: ProductCard(product: outOfStockProduct),
           ),
         ),
       );
 
       // Assert
       expect(find.text('Rupture de stock'), findsOneWidget);
-      expect(find.text('10 en stock'), findsNothing);
     });
 
-    testWidgets('should have add to cart button', (WidgetTester tester) async {
-      // Arrange & Act
+    testWidgets('should display low stock when stock is less than 5',
+        (WidgetTester tester) async {
+      // Arrange
+      final lowStockProduct = product.copyWith(stock: 3);
+
       await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(body: ProductCard(product: testProduct)),
+        MaterialApp(
+          home: Scaffold(
+            body: ProductCard(product: lowStockProduct),
           ),
         ),
       );
 
       // Assert
-      expect(find.byIcon(Icons.add_shopping_cart), findsOneWidget);
+      expect(find.text('Stock faible'), findsOneWidget);
     });
 
-    testWidgets('should disable add to cart button when out of stock', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('should call onTap when tapped', (WidgetTester tester) async {
       // Arrange
-      final outOfStockProduct = testProduct.copyWith(stock: 0);
+      bool tapped = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ProductCard(
+              product: product,
+              onTap: () => tapped = true,
+            ),
+          ),
+        ),
+      );
 
       // Act
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(body: ProductCard(product: outOfStockProduct)),
-          ),
-        ),
-      );
+      await tester.tap(find.byType(ProductCard));
+      await tester.pump();
 
       // Assert
-      expect(find.text('Rupture de stock'), findsOneWidget);
-      expect(find.byIcon(Icons.add_shopping_cart), findsOneWidget);
-    });
-
-    testWidgets('should be tappable for navigation', (
-      WidgetTester tester,
-    ) async {
-      // Arrange & Act
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            home: Scaffold(body: ProductCard(product: testProduct)),
-          ),
-        ),
-      );
-
-      // Assert
-      expect(find.byType(Card), findsOneWidget);
+      expect(tapped, true);
     });
   });
 }

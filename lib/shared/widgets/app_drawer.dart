@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../providers/app_providers.dart';
-import '../services/auth_service.dart';
+import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../../features/cart/presentation/providers/cart_providers.dart';
 
 class AppDrawer extends ConsumerWidget {
   const AppDrawer({super.key});
@@ -204,7 +204,7 @@ class AppDrawer extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop();
-              await AuthService.signOut();
+              await ref.read(signOutUseCaseProvider).call();
               if (context.mounted) {
                 context.go('/login');
               }

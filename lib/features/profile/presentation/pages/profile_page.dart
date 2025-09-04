@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../shared/providers/app_providers.dart';
-import '../../../../shared/services/auth_service.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -135,7 +134,7 @@ class ProfilePage extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop();
-              await AuthService.signOut();
+              await ref.read(signOutUseCaseProvider).call();
               if (context.mounted) {
                 context.go('/login');
               }

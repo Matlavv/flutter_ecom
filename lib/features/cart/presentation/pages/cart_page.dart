@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../shared/models/cart_item.dart';
-import '../../../../shared/providers/app_providers.dart';
-import '../../../../shared/services/cart_service.dart';
+import '../../domain/entities/cart_item_entity.dart';
+import '../providers/cart_providers.dart';
 
 class CartPage extends ConsumerWidget {
   const CartPage({super.key});
@@ -22,7 +21,7 @@ class CartPage extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () async {
-              await CartService.clearCart();
+              await ref.read(cartRepositoryProvider).clearCart();
               ref.invalidate(cartItemsProvider);
               ref.invalidate(cartTotalProvider);
             },
@@ -87,7 +86,8 @@ class CartPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildCartItem(BuildContext context, WidgetRef ref, CartItem item) {
+  Widget _buildCartItem(
+      BuildContext context, WidgetRef ref, CartItemEntity item) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
@@ -140,10 +140,10 @@ class CartPage extends ConsumerWidget {
                       IconButton(
                         icon: const Icon(Icons.remove),
                         onPressed: () async {
-                          await CartService.updateQuantity(
-                            item.product.id,
-                            item.quantity - 1,
-                          );
+                          await ref.read(cartRepositoryProvider).updateQuantity(
+                                item.product.id,
+                                item.quantity - 1,
+                              );
                           ref.invalidate(cartItemsProvider);
                           ref.invalidate(cartTotalProvider);
                         },
@@ -158,10 +158,10 @@ class CartPage extends ConsumerWidget {
                       IconButton(
                         icon: const Icon(Icons.add),
                         onPressed: () async {
-                          await CartService.updateQuantity(
-                            item.product.id,
-                            item.quantity + 1,
-                          );
+                          await ref.read(cartRepositoryProvider).updateQuantity(
+                                item.product.id,
+                                item.quantity + 1,
+                              );
                           ref.invalidate(cartItemsProvider);
                           ref.invalidate(cartTotalProvider);
                         },
@@ -185,7 +185,9 @@ class CartPage extends ConsumerWidget {
                 IconButton(
                   icon: const Icon(Icons.delete, color: Colors.red),
                   onPressed: () async {
-                    await CartService.removeFromCart(item.product.id);
+                    await ref
+                        .read(cartRepositoryProvider)
+                        .removeFromCart(item.product.id);
                     ref.invalidate(cartItemsProvider);
                     ref.invalidate(cartTotalProvider);
                   },

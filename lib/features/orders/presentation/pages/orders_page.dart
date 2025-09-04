@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../shared/models/order.dart';
-import '../../../../shared/providers/app_providers.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../domain/entities/order_entity.dart';
+import '../providers/order_providers.dart';
 
 class OrdersPage extends ConsumerWidget {
   const OrdersPage({super.key});
@@ -74,7 +75,7 @@ class OrdersPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildOrderCard(BuildContext context, Order order) {
+  Widget _buildOrderCard(BuildContext context, OrderEntity order) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       child: Padding(
@@ -199,7 +200,7 @@ class OrdersPage extends ConsumerWidget {
     return '${date.day}/${date.month}/${date.year} à ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 
-  void _showOrderDetails(BuildContext context, Order order) {
+  void _showOrderDetails(BuildContext context, OrderEntity order) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

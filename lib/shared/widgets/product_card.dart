@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../models/product.dart';
-import '../providers/app_providers.dart';
-import '../services/cart_service.dart';
+import '../../features/cart/presentation/providers/cart_providers.dart';
+import '../../features/catalog/domain/entities/product_entity.dart';
 
 class ProductCard extends ConsumerWidget {
-  final Product product;
+  final ProductEntity product;
   final VoidCallback? onTap;
 
   const ProductCard({super.key, required this.product, this.onTap});
@@ -191,7 +190,7 @@ class ProductCard extends ConsumerWidget {
 
   void _addToCart(BuildContext context, WidgetRef ref) async {
     try {
-      await CartService.addToCart(product);
+      await ref.read(addToCartUseCaseProvider).call(product);
 
       // Invalider les providers pour rafraîchir le panier
       ref.invalidate(cartItemsProvider);
