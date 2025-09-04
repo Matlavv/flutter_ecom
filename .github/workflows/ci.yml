@@ -1,0 +1,134 @@
+name: CI/CD Pipeline
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  flutter-version: '3.24.0'
+                  channel: 'stable'
+
+            - name: Install dependencies
+              run: flutter pub get
+
+            - name: Verify formatting
+              run: flutter format --set-exit-if-changed .
+
+            - name: Analyze code
+              run: flutter analyze
+
+            - name: Run tests with coverage
+              run: flutter test --coverage
+
+            - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v3
+              with:
+                  file: coverage/lcov.info
+                  flags: unittests
+                  name: codecov-umbrella
+                  fail_ci_if_error: false
+
+    build-web:
+        runs-on: ubuntu-latest
+        needs: test
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  flutter-version: '3.24.0'
+                  channel: 'stable'
+
+            - name: Install dependencies
+              run: flutter pub get
+
+            - name: Build web
+              run: flutter build web --release
+
+            - name: Upload web build artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                  name: web-build
+                  path: build/web/
+                  retention-days: 30
+
+    build-android:
+        runs-on: ubuntu-latest
+        needs: test
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Setup Java
+              uses: actions/setup-java@v3
+              with:
+                  distribution: 'zulu'
+                  java-version: '17'
+
+            - name: Setup Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  flutter-version: '3.24.0'
+                  channel: 'stable'
+
+            - name: Install dependencies
+              run: flutter pub get
+
+            - name: Build APK
+              run: flutter build apk --release
+
+            - name: Build AAB
+              run: flutter build appbundle --release
+
+            - name: Upload APK artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                  name: apk-build
+                  path: build/app/outputs/flutter-apk/
+                  retention-days: 30
+
+            - name: Upload AAB artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                  name: aab-build
+                  path: build/app/outputs/bundle/release/
+                  retention-days: 30
+
+    deploy-web:
+        runs-on: ubuntu-latest
+        needs: [test, build-web]
+        if: github.ref == 'refs/heads/main'
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Download web build artifacts
+              uses: actions/download-artifact@v3
+              with:
+                  name: web-build
+                  path: build/web/
+
+            - name: Deploy to Firebase Hosting
+              uses: FirebaseExtended/action-hosting-deploy@v0
+              with:
+                  repoToken: '${{ secrets.GITHUB_TOKEN }}'
+                  firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+                  channelId: live
+                  projectId: flutter-app-ecom
