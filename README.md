@@ -150,6 +150,23 @@ flutterfire configure
 flutter run -d chrome
 ```
 
+## 🧪 Tests
+
+### Test PWA (Progressive Web App)
+
+1. **Build web** : `flutter build web --release`
+2. **Serveur local** : `cd build/web && python3 -m http.server 8000`
+3. **Ouvrir** : `http://localhost:8000` dans Chrome/Edge
+4. **Vérifier PWA** : DevTools > Application > Manifest (score 90-100%)
+5. **Installer** : Icône "Installer" dans la barre d'adresse ou menu "Ajouter à l'écran d'accueil"
+
+### Test Android
+
+1. **Émulateur** : `flutter emulators` puis `flutter emulators --launch <emulator_id>`
+2. **Appareil physique** : Activer le mode développeur et débogage USB
+3. **Lancer** : `flutter run -d android` ou `flutter run -d <device_id>`
+4. **Build APK** : `flutter build apk --release` (fichier dans `build/app/outputs/flutter-apk/`)
+
 ### Variables d'environnement
 
 Le projet utilise des variables d'environnement sécurisées via `.env` :

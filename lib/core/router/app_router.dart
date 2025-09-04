@@ -5,11 +5,12 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/cart/presentation/pages/cart_page.dart';
 import '../../features/catalog/presentation/pages/catalog_page.dart';
-import '../../features/product/presentation/pages/product_detail_page.dart';
 import '../../features/orders/presentation/pages/checkout_page.dart';
 import '../../features/orders/presentation/pages/orders_page.dart';
+import '../../features/product/presentation/pages/product_detail_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../shared/widgets/app_drawer.dart';
+import '../../shared/widgets/pwa_install_button.dart';
 import '../pages/splash_page.dart';
 
 class AppRouter {
@@ -46,7 +47,12 @@ class AppRouter {
         builder: (context, state, child) {
           return Scaffold(
             drawer: const AppDrawer(),
-            body: child,
+            body: Column(
+              children: [
+                const PWAInstallButton(),
+                Expanded(child: child),
+              ],
+            ),
             bottomNavigationBar: BottomNavigationBar(
               type: BottomNavigationBarType.fixed,
               currentIndex: _calculateSelectedIndex(state.matchedLocation),
