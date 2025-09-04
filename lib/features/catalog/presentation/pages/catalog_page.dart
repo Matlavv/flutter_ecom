@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../shared/models/product.dart';
 import '../../../../shared/providers/app_providers.dart';
 import '../../../../shared/services/auth_service.dart';
-import '../../../../shared/services/cart_service.dart';
 import '../../../../shared/services/product_service.dart';
 import '../../../../shared/widgets/product_card.dart';
 
@@ -173,7 +172,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
           padding: const EdgeInsets.all(16),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: 0.7,
+            childAspectRatio: 0.75,
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
@@ -197,7 +196,6 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
       ),
     );
   }
-
 
   void _showAddProductDialog() {
     final titleController = TextEditingController();

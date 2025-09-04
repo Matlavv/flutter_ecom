@@ -22,6 +22,7 @@ class ProductCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Image du produit
             ClipRRect(
@@ -29,7 +30,7 @@ class ProductCard extends ConsumerWidget {
                 top: Radius.circular(12),
               ),
               child: Container(
-                height: 180,
+                height: 160,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -54,9 +55,10 @@ class ProductCard extends ConsumerWidget {
 
             // Contenu de la carte
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Titre et catégorie
                   Row(
@@ -101,11 +103,11 @@ class ProductCard extends ConsumerWidget {
                     style: Theme.of(
                       context,
                     ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
 
                   // Prix et bouton d'ajout
                   Row(
@@ -140,18 +142,21 @@ class ProductCard extends ConsumerWidget {
 
                       // Bouton d'ajout au panier
                       Container(
+                        width: 36,
+                        height: 36,
                         decoration: BoxDecoration(
                           color: Theme.of(context).primaryColor,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: IconButton(
+                          padding: EdgeInsets.zero,
                           onPressed: product.stock > 0
                               ? () => _addToCart(context, ref)
                               : null,
                           icon: const Icon(
                             Icons.add_shopping_cart,
                             color: Colors.white,
-                            size: 20,
+                            size: 18,
                           ),
                           tooltip: 'Ajouter au panier',
                         ),
