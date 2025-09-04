@@ -29,8 +29,7 @@ class Order {
     return Order(
       id: json['id'] ?? '',
       userId: json['userId'] ?? '',
-      items:
-          (json['items'] as List<dynamic>?)
+      items: (json['items'] as List<dynamic>?)
               ?.map((item) => CartItem.fromJson(item))
               .toList() ??
           [],

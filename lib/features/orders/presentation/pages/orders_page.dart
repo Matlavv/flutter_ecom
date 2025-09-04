@@ -106,9 +106,7 @@ class OrdersPage extends ConsumerWidget {
             const SizedBox(height: 12),
 
             // Articles de la commande
-            ...order.items
-                .take(3)
-                .map(
+            ...order.items.take(3).map(
                   (item) => Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Row(

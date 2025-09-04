@@ -108,7 +108,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         // Title
                         Text(
                           'Eco',
-                          style: Theme.of(context).textTheme.headlineMedium
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
                               ?.copyWith(
                                 color: Theme.of(context).primaryColor,
                                 fontWeight: FontWeight.bold,
@@ -118,7 +120,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                         Text(
                           _isSignUp ? 'Créer votre compte' : 'Bienvenue !',
-                          style: Theme.of(context).textTheme.titleMedium
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
                               ?.copyWith(color: Colors.grey[600]),
                         ),
                         const SizedBox(height: 32),

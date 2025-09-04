@@ -15,7 +15,8 @@ class OrderService {
     required String paymentMethod,
   }) async {
     try {
-      final totalAmount = items.fold(0.0, (sum, item) => sum + item.totalPrice);
+      final totalAmount =
+          items.fold(0.0, (total, item) => total + item.totalPrice);
 
       final order = Order(
         id: '', // Sera généré par Firestore

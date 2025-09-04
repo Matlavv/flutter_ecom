@@ -144,11 +144,10 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
       data: (products) {
         // Filtrer par recherche
         final filteredProducts = products.where((product) {
-          final matchesSearch =
-              _searchController.text.isEmpty ||
+          final matchesSearch = _searchController.text.isEmpty ||
               product.title.toLowerCase().contains(
-                _searchController.text.toLowerCase(),
-              );
+                    _searchController.text.toLowerCase(),
+                  );
           return matchesSearch;
         }).toList();
 

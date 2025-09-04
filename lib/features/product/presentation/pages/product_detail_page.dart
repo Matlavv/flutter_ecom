@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../shared/models/product.dart';
 import '../../../../shared/providers/app_providers.dart';
 import '../../../../shared/services/cart_service.dart';
-import '../../../../shared/widgets/product_card.dart';
 
 class ProductDetailPage extends ConsumerWidget {
   final String productId;
@@ -28,12 +27,14 @@ class ProductDetailPage extends ConsumerWidget {
           return _buildProductDetail(context, ref, product);
         },
         loading: () => _buildLoadingState(),
-        error: (error, stackTrace) => _buildErrorState(context, error.toString()),
+        error: (error, stackTrace) =>
+            _buildErrorState(context, error.toString()),
       ),
     );
   }
 
-  Widget _buildProductDetail(BuildContext context, WidgetRef ref, Product product) {
+  Widget _buildProductDetail(
+      BuildContext context, WidgetRef ref, Product product) {
     return CustomScrollView(
       slivers: [
         // AppBar avec image
@@ -49,10 +50,11 @@ class ProductDetailPage extends ConsumerWidget {
                     ? Image.network(
                         product.thumbnail,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => _buildPlaceholderImage(),
+                        errorBuilder: (context, error, stackTrace) =>
+                            _buildPlaceholderImage(),
                       )
                     : _buildPlaceholderImage(),
-                
+
                 // Overlay gradient
                 Container(
                   decoration: BoxDecoration(
@@ -108,13 +110,15 @@ class ProductDetailPage extends ConsumerWidget {
                     Expanded(
                       child: Text(
                         product.title,
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
                         color: Theme.of(context).primaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(16),
@@ -122,89 +126,104 @@ class ProductDetailPage extends ConsumerWidget {
                       child: Text(
                         product.category,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.w600,
-                        ),
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.w600,
+                            ),
                       ),
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Prix et stock
                 Row(
                   children: [
                     Text(
                       '${product.price.toStringAsFixed(2)} €',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: Theme.of(context).primaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: product.stock > 0 ? Colors.green[100] : Colors.red[100],
+                        color: product.stock > 0
+                            ? Colors.green[100]
+                            : Colors.red[100],
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            product.stock > 0 ? Icons.check_circle : Icons.cancel,
+                            product.stock > 0
+                                ? Icons.check_circle
+                                : Icons.cancel,
                             size: 16,
-                            color: product.stock > 0 ? Colors.green[700] : Colors.red[700],
+                            color: product.stock > 0
+                                ? Colors.green[700]
+                                : Colors.red[700],
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            product.stock > 0 ? '${product.stock} en stock' : 'Rupture',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: product.stock > 0 ? Colors.green[700] : Colors.red[700],
-                              fontWeight: FontWeight.w600,
-                            ),
+                            product.stock > 0
+                                ? '${product.stock} en stock'
+                                : 'Rupture',
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: product.stock > 0
+                                          ? Colors.green[700]
+                                          : Colors.red[700],
+                                      fontWeight: FontWeight.w600,
+                                    ),
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Description
                 Text(
                   'Description',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   product.description,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    height: 1.5,
-                  ),
+                        height: 1.5,
+                      ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Bouton d'ajout au panier
                 SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton.icon(
-                    onPressed: product.stock > 0 ? () => _addToCart(context, ref, product) : null,
+                    onPressed: product.stock > 0
+                        ? () => _addToCart(context, ref, product)
+                        : null,
                     icon: const Icon(Icons.add_shopping_cart),
                     label: Text(
-                      product.stock > 0 
-                          ? 'Ajouter au panier' 
+                      product.stock > 0
+                          ? 'Ajouter au panier'
                           : 'Produit indisponible',
                     ),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: product.stock > 0 
-                          ? Theme.of(context).primaryColor 
+                      backgroundColor: product.stock > 0
+                          ? Theme.of(context).primaryColor
                           : Colors.grey,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
@@ -213,9 +232,9 @@ class ProductDetailPage extends ConsumerWidget {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Informations supplémentaires
                 _buildInfoCard(
                   context,
@@ -223,16 +242,16 @@ class ProductDetailPage extends ConsumerWidget {
                   'Livraison gratuite sous 48h',
                   Icons.local_shipping,
                 ),
-                
+
                 const SizedBox(height: 12),
-                
+
                 _buildInfoCard(
                   context,
                   'Retour',
                   'Retour gratuit sous 30 jours',
                   Icons.undo,
                 ),
-                
+
                 const SizedBox(height: 32),
               ],
             ),
@@ -242,7 +261,8 @@ class ProductDetailPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildInfoCard(BuildContext context, String title, String subtitle, IconData icon) {
+  Widget _buildInfoCard(
+      BuildContext context, String title, String subtitle, IconData icon) {
     return Card(
       child: ListTile(
         leading: Container(
@@ -260,8 +280,8 @@ class ProductDetailPage extends ConsumerWidget {
         title: Text(
           title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+                fontWeight: FontWeight.w600,
+              ),
         ),
         subtitle: Text(subtitle),
       ),
@@ -312,8 +332,8 @@ class ProductDetailPage extends ConsumerWidget {
             Text(
               error,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
+                    color: Colors.grey[600],
+                  ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -330,12 +350,12 @@ class ProductDetailPage extends ConsumerWidget {
   void _addToCart(BuildContext context, WidgetRef ref, Product product) async {
     try {
       await CartService.addToCart(product);
-      
+
       // Invalider les providers pour rafraîchir le panier
       ref.invalidate(cartItemsProvider);
       ref.invalidate(cartTotalProvider);
       ref.invalidate(cartItemsCountProvider);
-      
+
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

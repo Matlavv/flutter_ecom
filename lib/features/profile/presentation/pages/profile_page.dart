@@ -55,14 +55,18 @@ class ProfilePage extends ConsumerWidget {
                                 const SizedBox(height: 4),
                                 Text(
                                   user.email,
-                                  style: Theme.of(context).textTheme.bodyMedium
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
                                       ?.copyWith(color: Colors.grey[600]),
                                 ),
                                 if (user.createdAt != null) ...[
                                   const SizedBox(height: 4),
                                   Text(
                                     'Membre depuis ${_formatDate(user.createdAt!)}',
-                                    style: Theme.of(context).textTheme.bodySmall
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall
                                         ?.copyWith(color: Colors.grey[500]),
                                   ),
                                 ],
@@ -79,8 +83,8 @@ class ProfilePage extends ConsumerWidget {
                   Text(
                     'Actions',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 16),
 

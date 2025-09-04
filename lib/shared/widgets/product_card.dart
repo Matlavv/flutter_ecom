@@ -66,7 +66,9 @@ class ProductCard extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           product.title,
-                          style: Theme.of(context).textTheme.titleMedium
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
                               ?.copyWith(fontWeight: FontWeight.w600),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -85,11 +87,11 @@ class ProductCard extends ConsumerWidget {
                         ),
                         child: Text(
                           product.category,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Theme.of(context).primaryColor,
-                                fontWeight: FontWeight.w500,
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context).primaryColor,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                         ),
                       ),
                     ],
@@ -118,7 +120,9 @@ class ProductCard extends ConsumerWidget {
                           children: [
                             Text(
                               '${product.price.toStringAsFixed(2)} €',
-                              style: Theme.of(context).textTheme.titleLarge
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
                                   ?.copyWith(
                                     color: Theme.of(context).primaryColor,
                                     fontWeight: FontWeight.bold,
@@ -127,13 +131,17 @@ class ProductCard extends ConsumerWidget {
                             if (product.stock > 0)
                               Text(
                                 '${product.stock} en stock',
-                                style: Theme.of(context).textTheme.bodySmall
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
                                     ?.copyWith(color: Colors.green[600]),
                               )
                             else
                               Text(
                                 'Rupture de stock',
-                                style: Theme.of(context).textTheme.bodySmall
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
                                     ?.copyWith(color: Colors.red[600]),
                               ),
                           ],
