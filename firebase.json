@@ -1,0 +1,55 @@
+{
+    "firestore": {
+        "rules": "firestore.rules",
+        "indexes": "firestore.indexes.json"
+    },
+    "hosting": {
+        "public": "build/web",
+        "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+        "rewrites": [
+            {
+                "source": "**",
+                "destination": "/index.html"
+            }
+        ]
+    },
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "flutter-app-ecom",
+                    "appId": "1:330662716424:android:631f4fe5d537f3936dddbd",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "ios": {
+                "default": {
+                    "projectId": "flutter-app-ecom",
+                    "appId": "1:330662716424:ios:c2120369ae769ed96dddbd",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "ios/Runner/GoogleService-Info.plist"
+                }
+            },
+            "macos": {
+                "default": {
+                    "projectId": "flutter-app-ecom",
+                    "appId": "1:330662716424:ios:c2120369ae769ed96dddbd",
+                    "uploadDebugSymbols": false,
+                    "fileOutput": "macos/Runner/GoogleService-Info.plist"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "flutter-app-ecom",
+                    "configurations": {
+                        "android": "1:330662716424:android:631f4fe5d537f3936dddbd",
+                        "ios": "1:330662716424:ios:c2120369ae769ed96dddbd",
+                        "macos": "1:330662716424:ios:c2120369ae769ed96dddbd",
+                        "web": "1:330662716424:web:a07ce9314cf470476dddbd",
+                        "windows": "1:330662716424:web:8f7e6c20df74acb76dddbd"
+                    }
+                }
+            }
+        }
+    }
+}

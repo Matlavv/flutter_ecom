@@ -1,0 +1,47 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Règles pour les utilisateurs
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Règles pour les produits - lecture pour tous, écriture pour les utilisateurs connectés
+    match /products/{productId} {
+      allow read: if true; // Tout le monde peut lire les produits
+      allow write: if request.auth != null; // Seuls les utilisateurs connectés peuvent créer/modifier
+    }
+    
+    // Règles pour les commandes
+    match /orders/{orderId} {
+      // Lecture : utilisateur peut lire ses propres commandes
+      allow read: if request.auth != null && 
+        (resource.data.userId == request.auth.uid);
+      
+      // Création : utilisateur connecté peut créer une commande avec son userId
+      allow create: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Mise à jour : utilisateur peut modifier ses propres commandes
+      allow update: if request.auth != null && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // Règles pour les paniers
+    match /carts/{cartId} {
+      // Lecture : utilisateur peut lire son propre panier
+      allow read: if request.auth != null && 
+        resource.data.userId == request.auth.uid;
+      
+      // Création : utilisateur connecté peut créer un panier avec son userId
+      allow create: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Mise à jour : utilisateur peut modifier son propre panier
+      allow update: if request.auth != null && 
+        resource.data.userId == request.auth.uid;
+    }
+  }
+}
