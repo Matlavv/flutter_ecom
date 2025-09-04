@@ -45,25 +45,70 @@ Une application e-commerce complète développée avec Flutter, Firebase et une 
 
 ## 🏗️ Architecture
 
-### Structure MVVM/Clean
+### Structure MVVM/Clean Architecture
+
+L'application suit une architecture **Clean Architecture** avec **MVVM** pour une séparation claire des responsabilités :
 
 ```
 lib/
-├── core/                    # Configuration de base
-│   ├── router/             # Navigation avec go_router
-│   └── pages/              # Pages de base (splash)
-├── features/               # Fonctionnalités métier
-│   ├── auth/              # Authentification
-│   ├── catalog/           # Catalogue de produits
-│   ├── cart/              # Panier d'achat
-│   ├── orders/            # Gestion des commandes
-│   └── profile/           # Profil utilisateur
-└── shared/                # Composants partagés
-    ├── models/            # Modèles de données
-    ├── services/          # Services métier
-    ├── providers/         # Gestion d'état (Riverpod)
-    └── widgets/           # Widgets réutilisables
+├── core/                           # Configuration de base
+│   ├── providers/                  # Providers centraux (exports)
+│   ├── router/                     # Navigation avec go_router
+│   ├── theme/                      # Thème et design system
+│   └── pages/                      # Pages de base (splash)
+├── features/                       # Fonctionnalités métier
+│   ├── auth/                       # Authentification
+│   │   ├── domain/                 # Couche métier
+│   │   │   ├── entities/           # Entités métier (UserEntity)
+│   │   │   ├── repositories/       # Interfaces de repositories
+│   │   │   └── usecases/           # Cas d'usage métier
+│   │   ├── data/                   # Couche données
+│   │   │   ├── models/             # Modèles de sérialisation
+│   │   │   ├── datasources/        # Sources de données (Firebase)
+│   │   │   └── repositories/       # Implémentations des repositories
+│   │   └── presentation/           # Couche présentation
+│   │       ├── pages/              # Pages UI
+│   │       └── providers/          # ViewModels (Riverpod)
+│   ├── catalog/                    # Catalogue de produits
+│   │   ├── domain/                 # ProductEntity, ProductRepository, UseCases
+│   │   ├── data/                   # ProductModel, Firestore, RepositoryImpl
+│   │   └── presentation/           # CatalogPage, ProductProviders
+│   ├── cart/                       # Panier d'achat
+│   │   ├── domain/                 # CartItemEntity, CartRepository, UseCases
+│   │   ├── data/                   # CartItemModel, SharedPreferences, RepositoryImpl
+│   │   └── presentation/           # CartPage, CartProviders
+│   ├── orders/                     # Gestion des commandes
+│   │   ├── domain/                 # OrderEntity, OrderRepository, UseCases
+│   │   ├── data/                   # OrderModel, Firestore, RepositoryImpl
+│   │   └── presentation/           # OrdersPage, OrderProviders
+│   └── profile/                    # Profil utilisateur
+│       └── presentation/           # ProfilePage
+└── shared/                         # Composants partagés
+    └── widgets/                    # Widgets réutilisables
+        ├── app_drawer.dart         # Drawer de navigation
+        ├── product_card.dart       # Carte produit
+        └── pwa_install_button.dart # Bouton d'installation PWA
 ```
+
+### Couches de l'Architecture
+
+#### 🎯 **Domain Layer** (Logique Métier)
+
+-   **Entities** : Objets métier purs (UserEntity, ProductEntity, CartItemEntity, OrderEntity)
+-   **Repository Interfaces** : Contrats pour l'accès aux données
+-   **Use Cases** : Logique métier spécifique (SignInUseCase, GetProductsUseCase, AddToCartUseCase)
+
+#### 💾 **Data Layer** (Accès aux Données)
+
+-   **Models** : Objets de sérialisation/désérialisation (UserModel, ProductModel)
+-   **Data Sources** : Interfaces avec les sources externes (Firebase, SharedPreferences)
+-   **Repository Implementations** : Implémentations concrètes des repositories
+
+#### 🎨 **Presentation Layer** (Interface Utilisateur)
+
+-   **Pages** : Écrans de l'application (LoginPage, CatalogPage, CartPage)
+-   **Providers** : ViewModels avec Riverpod pour la gestion d'état
+-   **Widgets** : Composants UI réutilisables
 
 ### Technologies Utilisées
 
@@ -119,10 +164,12 @@ service cloud.firestore {
 
 #### Architecture Patterns
 
--   **MVVM (Model-View-ViewModel)** - Séparation des responsabilités
--   **Repository Pattern** - Abstraction de la couche données
--   **Provider Pattern** - Injection de dépendances
--   **Clean Architecture** - Structure modulaire et testable
+-   **Clean Architecture** - Séparation en couches (Domain, Data, Presentation)
+-   **MVVM (Model-View-ViewModel)** - Séparation des responsabilités UI
+-   **Repository Pattern** - Abstraction de l'accès aux données
+-   **Use Case Pattern** - Encapsulation de la logique métier
+-   **Dependency Injection** - Avec Riverpod pour l'injection de dépendances
+-   **Single Responsibility Principle** - Chaque classe a une responsabilité unique
 
 ## 🔧 Configuration
 
@@ -215,20 +262,30 @@ match /orders/{orderId} {
 
 ### Tests Unitaires
 
--   Services métier (Auth, Cart, Order, Product)
--   Modèles de données
--   Logique de calcul (totaux, quantités)
+#### **Domain Layer**
+
+-   **Entities** : Tests des objets métier (UserEntity, ProductEntity, CartItemEntity, OrderEntity)
+-   **Use Cases** : Tests de la logique métier (SignInUseCase, GetProductsUseCase, AddToCartUseCase)
+-   **Repository Interfaces** : Tests des contrats
+
+#### **Data Layer**
+
+-   **Models** : Tests de sérialisation/désérialisation (UserModel, ProductModel)
+-   **Data Sources** : Tests des interactions avec Firebase et SharedPreferences
+-   **Repository Implementations** : Tests des implémentations concrètes
 
 ### Tests Widget
 
--   Composants UI principaux
--   Navigation et routing
--   Gestion d'état
+-   **Pages** : Tests des écrans principaux (LoginPage, CatalogPage, CartPage)
+-   **Widgets** : Tests des composants réutilisables (ProductCard, AppDrawer)
+-   **Navigation** : Tests du routing avec go_router
+-   **Providers** : Tests de la gestion d'état avec Riverpod
 
 ### Couverture
 
 -   **Objectif** : ≥ 50% de couverture de code
 -   **Outils** : Flutter Test + Coverage
+-   **Structure** : Tests organisés par couche (domain, data, presentation)
 
 ## 🚀 Déploiement
 
@@ -256,10 +313,12 @@ flutter build apk --release
 
 ### Gestion d'État
 
--   **Riverpod** pour la réactivité
--   **StreamProvider** pour les données temps réel
--   **FutureProvider** pour les opérations asynchrones
--   **StateNotifier** pour la logique complexe
+-   **Riverpod** pour la réactivité et l'injection de dépendances
+-   **StreamProvider** pour les données temps réel (Firestore)
+-   **FutureProvider** pour les opérations asynchrones (Use Cases)
+-   **Provider** pour l'injection de dépendances (Repositories, Data Sources)
+-   **StateNotifier** pour la logique complexe (si nécessaire)
+-   **Architecture réactive** : Les ViewModels (Providers) écoutent les Use Cases
 
 ### Persistance
 
