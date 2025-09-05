@@ -14,52 +14,37 @@ class ProductCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap ?? () => context.go('/product/${product.id}'),
-        borderRadius: BorderRadius.circular(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Image du produit
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
-              ),
-              child: Container(
-                height: 160,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                      Theme.of(context).primaryColor.withValues(alpha: 0.05),
-                    ],
+            // Visuel produit (ratio constant)
+            AspectRatio(
+              aspectRatio: 4 / 3,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _buildProductImage(context),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: _StockBadge(stock: product.stock),
                   ),
-                ),
-                child: product.thumbnail.isNotEmpty
-                    ? Image.network(
-                        product.thumbnail,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            _buildPlaceholderImage(context),
-                      )
-                    : _buildPlaceholderImage(context),
+                ],
               ),
             ),
 
-            // Contenu de la carte
+            // Contenu
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Titre et catégorie
                   Row(
                     children: [
                       Expanded(
@@ -68,7 +53,7 @@ class ProductCard extends ConsumerWidget {
                           style: Theme.of(context)
                               .textTheme
                               .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w600),
+                              ?.copyWith(fontWeight: FontWeight.w700),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -79,38 +64,38 @@ class ProductCard extends ConsumerWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).primaryColor.withValues(alpha: 0.1),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           product.category,
-                          style:
-                              Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context).primaryColor,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 8),
-
-                  // Description
                   Text(
                     product.description,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.color
+                            ?.withOpacity(0.8)),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-
-                  const SizedBox(height: 8),
-
-                  // Prix et bouton d'ajout
+                  const SizedBox(height: 10),
                   Row(
                     children: [
                       Expanded(
@@ -123,49 +108,39 @@ class ProductCard extends ConsumerWidget {
                                   .textTheme
                                   .titleLarge
                                   ?.copyWith(
-                                    color: Theme.of(context).primaryColor,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                     fontWeight: FontWeight.bold,
                                   ),
                             ),
-                            if (product.stock > 0)
-                              Text(
-                                '${product.stock} en stock',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(color: Colors.green[600]),
-                              )
-                            else
-                              Text(
-                                'Rupture de stock',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall
-                                    ?.copyWith(color: Colors.red[600]),
-                              ),
+                            Text(
+                              product.stock > 0
+                                  ? '${product.stock} en stock'
+                                  : 'Rupture de stock',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color: product.stock > 0
+                                        ? Colors.green[600]
+                                        : Colors.red[500],
+                                  ),
+                            ),
                           ],
                         ),
                       ),
-
-                      // Bouton d'ajout au panier
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: IconButton(
-                          padding: EdgeInsets.zero,
+                      SizedBox(
+                        height: 40,
+                        child: ElevatedButton.icon(
                           onPressed: product.stock > 0
                               ? () => _addToCart(context, ref)
                               : null,
-                          icon: const Icon(
-                            Icons.add_shopping_cart,
-                            color: Colors.white,
-                            size: 18,
+                          icon: const Icon(Icons.add_shopping_cart, size: 18),
+                          label: const Text('Ajouter'),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            minimumSize: const Size(100, 40),
                           ),
-                          tooltip: 'Ajouter au panier',
                         ),
                       ),
                     ],
@@ -179,9 +154,34 @@ class ProductCard extends ConsumerWidget {
     );
   }
 
+  Widget _buildProductImage(BuildContext context) {
+    if (product.thumbnail.isNotEmpty) {
+      return Image.network(
+        product.thumbnail,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return _buildPlaceholderImage(context);
+        },
+        errorBuilder: (context, error, stackTrace) =>
+            _buildPlaceholderImage(context),
+      );
+    }
+    return _buildPlaceholderImage(context);
+  }
+
   Widget _buildPlaceholderImage(BuildContext context) {
     return Container(
-      color: Colors.grey[200],
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.04),
+          ],
+        ),
+      ),
       child: Center(
         child: Icon(Icons.image_outlined, size: 48, color: Colors.grey[400]),
       ),
@@ -207,10 +207,10 @@ class ProductCard extends ConsumerWidget {
                 Text('${product.title} ajouté au panier'),
               ],
             ),
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
         );
@@ -226,5 +226,28 @@ class ProductCard extends ConsumerWidget {
         );
       }
     }
+  }
+}
+
+class _StockBadge extends StatelessWidget {
+  final int stock;
+  const _StockBadge({required this.stock});
+
+  @override
+  Widget build(BuildContext context) {
+    final bool hasStock = stock > 0;
+    final Color bg = hasStock ? Colors.green[600]! : Colors.red[500]!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        hasStock ? 'En stock' : 'Rupture',
+        style: const TextStyle(
+            color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+      ),
+    );
   }
 }

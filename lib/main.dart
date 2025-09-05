@@ -25,6 +25,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'EcoShop',
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
       // je gère mes routes ici
       routerConfig: AppRouter.router,

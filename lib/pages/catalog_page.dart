@@ -81,6 +81,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
               decoration: InputDecoration(
                 hintText: 'Rechercher un produit...',
                 prefixIcon: const Icon(Icons.search),
+                isDense: true,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -91,6 +92,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                           _searchController.clear();
                           setState(() {});
                         },
+                        tooltip: 'Effacer',
                       )
                     : null,
               ),
@@ -100,7 +102,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
 
           // Filtres par catégorie
           SizedBox(
-            height: 50,
+            height: 48,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -119,13 +121,21 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                         _selectedCategory = category;
                       });
                     },
+                    selectedColor:
+                        Theme.of(context).colorScheme.primary.withOpacity(0.12),
+                    showCheckmark: false,
+                    side: BorderSide(
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context).dividerColor,
+                    ),
                   ),
                 );
               },
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           // Liste des produits
           Expanded(child: _buildProductsList()),
@@ -166,18 +176,29 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
           );
         }
 
-        return GridView.builder(
-          padding: const EdgeInsets.all(16),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.75,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-          ),
-          itemCount: filteredProducts.length,
-          itemBuilder: (context, index) {
-            final product = filteredProducts[index];
-            return ProductCard(product: product);
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            // Grille adaptative: 2 colonnes en mobile, 3 tablette, 4 desktop
+            final width = constraints.maxWidth;
+            int crossAxisCount = 2;
+            if (width >= 1200)
+              crossAxisCount = 4;
+            else if (width >= 800) crossAxisCount = 3;
+
+            return GridView.builder(
+              padding: const EdgeInsets.all(16),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                childAspectRatio: 0.75,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemCount: filteredProducts.length,
+              itemBuilder: (context, index) {
+                final product = filteredProducts[index];
+                return ProductCard(product: product);
+              },
+            );
           },
         );
       },
