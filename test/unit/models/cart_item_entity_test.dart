@@ -1,5 +1,5 @@
-import 'package:flutter_ecom/features/cart/domain/entities/cart_item_entity.dart';
-import 'package:flutter_ecom/features/catalog/domain/entities/product_entity.dart';
+import 'package:flutter_ecom/models/cart_item_entity.dart';
+import 'package:flutter_ecom/models/product_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

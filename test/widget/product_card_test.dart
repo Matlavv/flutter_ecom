@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom/features/catalog/domain/entities/product_entity.dart';
-import 'package:flutter_ecom/shared/widgets/product_card.dart';
+import 'package:flutter_ecom/models/product_entity.dart';
+import 'package:flutter_ecom/widgets/product_card.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

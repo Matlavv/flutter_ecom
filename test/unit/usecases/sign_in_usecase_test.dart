@@ -1,6 +1,6 @@
-import 'package:flutter_ecom/features/auth/domain/entities/user_entity.dart';
-import 'package:flutter_ecom/features/auth/domain/repositories/auth_repository.dart';
-import 'package:flutter_ecom/features/auth/domain/usecases/sign_in_usecase.dart';
+import 'package:flutter_ecom/models/user_entity.dart';
+import 'package:flutter_ecom/services/auth_repository.dart';
+import 'package:flutter_ecom/viewmodels/sign_in_usecase.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class MockAuthRepository implements AuthRepository {
