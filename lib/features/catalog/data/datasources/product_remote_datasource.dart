@@ -82,7 +82,7 @@ class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
     return _firestore
         .collection(_collection)
         .where('title', isGreaterThanOrEqualTo: query)
-        .where('title', isLessThan: query + 'z')
+        .where('title', isLessThan: '${query}z')
         .snapshots()
         .map((snapshot) => snapshot.docs
             .map((doc) => ProductModel.fromJson({...doc.data(), 'id': doc.id}))
