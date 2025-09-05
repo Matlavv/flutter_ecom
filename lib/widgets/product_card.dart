@@ -131,16 +131,36 @@ class ProductCard extends ConsumerWidget {
                       ),
                       SizedBox(
                         height: 40,
-                        child: ElevatedButton.icon(
-                          onPressed: product.stock > 0
-                              ? () => _addToCart(context, ref)
-                              : null,
-                          icon: const Icon(Icons.add_shopping_cart, size: 18),
-                          label: const Text('Ajouter'),
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            minimumSize: const Size(100, 40),
-                          ),
+                        child: Builder(
+                          builder: (context) {
+                            final scheme = Theme.of(context).colorScheme;
+                            final bool isEnabled = product.stock > 0;
+                            final Color bg = scheme.primary;
+                            final Color fg = isEnabled
+                                ? scheme.onPrimary
+                                : Theme.of(context).disabledColor;
+                            return ElevatedButton.icon(
+                              onPressed: isEnabled
+                                  ? () => _addToCart(context, ref)
+                                  : null,
+                              icon: Icon(
+                                Icons.add_shopping_cart,
+                                size: 18,
+                                color: fg,
+                              ),
+                              label: Text(
+                                'Ajouter',
+                                style: TextStyle(color: fg),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: bg,
+                                foregroundColor: fg,
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 12),
+                                minimumSize: const Size(100, 40),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -236,7 +256,11 @@ class _StockBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool hasStock = stock > 0;
-    final Color bg = hasStock ? Colors.green[600]! : Colors.red[500]!;
+    final scheme = Theme.of(context).colorScheme;
+    final Color bg =
+        hasStock ? scheme.tertiaryContainer : scheme.errorContainer;
+    final Color fg =
+        hasStock ? scheme.onTertiaryContainer : scheme.onErrorContainer;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -245,8 +269,7 @@ class _StockBadge extends StatelessWidget {
       ),
       child: Text(
         hasStock ? 'En stock' : 'Rupture',
-        style: const TextStyle(
-            color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700),
+        style: TextStyle(color: fg, fontSize: 12, fontWeight: FontWeight.w700),
       ),
     );
   }

@@ -36,6 +36,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
   @override
   Widget build(BuildContext context) {
     final themeMode = ref.watch(themeModeProvider);
+    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -45,17 +46,23 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: scheme.surface,
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: scheme.outlineVariant),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.shopping_bag_outlined,
-                color: Color(0xFF2E7D32),
+                color: scheme.primary,
                 size: 20,
               ),
             ),
             const SizedBox(width: 12),
-            const Text('EcoShop'),
+            Text(
+              'EcoShop',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Theme.of(context).appBarTheme.foregroundColor,
+                  ),
+            ),
           ],
         ),
         actions: [
@@ -173,8 +180,10 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                         _selectedCategory = category;
                       });
                     },
-                    selectedColor:
-                        Theme.of(context).colorScheme.primary.withOpacity(0.12),
+                    selectedColor: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.12),
                     showCheckmark: false,
                     side: BorderSide(
                       color: isSelected
