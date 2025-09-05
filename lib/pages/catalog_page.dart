@@ -6,6 +6,7 @@ import '../models/product_entity.dart';
 import '../viewmodels/auth_providers.dart';
 import '../viewmodels/product_providers.dart';
 import '../widgets/product_card.dart';
+import '../viewmodels/app_providers.dart';
 
 class CatalogPage extends ConsumerStatefulWidget {
   const CatalogPage({super.key});
@@ -34,6 +35,8 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeModeProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -56,6 +59,55 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
           ],
         ),
         actions: [
+          // Sélecteur de thème
+          PopupMenuButton<ThemeMode>(
+            icon: const Icon(Icons.brightness_6),
+            tooltip: 'Thème',
+            initialValue: themeMode,
+            onSelected: (mode) =>
+                ref.read(themeModeProvider.notifier).setThemeMode(mode),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: ThemeMode.system,
+                child: Row(
+                  children: [
+                    const Icon(Icons.settings_suggest, size: 18),
+                    const SizedBox(width: 8),
+                    const Text('Système'),
+                    const Spacer(),
+                    if (themeMode == ThemeMode.system)
+                      const Icon(Icons.check, size: 18),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: ThemeMode.light,
+                child: Row(
+                  children: [
+                    const Icon(Icons.light_mode, size: 18),
+                    const SizedBox(width: 8),
+                    const Text('Clair'),
+                    const Spacer(),
+                    if (themeMode == ThemeMode.light)
+                      const Icon(Icons.check, size: 18),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: ThemeMode.dark,
+                child: Row(
+                  children: [
+                    const Icon(Icons.dark_mode, size: 18),
+                    const SizedBox(width: 8),
+                    const Text('Sombre'),
+                    const Spacer(),
+                    if (themeMode == ThemeMode.dark)
+                      const Icon(Icons.check, size: 18),
+                  ],
+                ),
+              ),
+            ],
+          ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => _showAddProductDialog(),
