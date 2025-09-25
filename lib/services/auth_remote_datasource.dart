@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide User;
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../models/user_model.dart';
 
@@ -12,6 +13,7 @@ abstract class AuthRemoteDataSource {
     String password,
     String displayName,
   );
+  Future<UserModel> signInWithGoogle();
   Future<UserModel> updateUserProfile({
     String? displayName,
     String? photoUrl,
@@ -22,12 +24,15 @@ abstract class AuthRemoteDataSource {
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final FirebaseAuth _auth;
   final FirebaseFirestore _firestore;
+  final GoogleSignIn _googleSignIn;
 
   AuthRemoteDataSourceImpl({
     required FirebaseAuth auth,
     required FirebaseFirestore firestore,
+    required GoogleSignIn googleSignIn,
   })  : _auth = auth,
-        _firestore = firestore;
+        _firestore = firestore,
+        _googleSignIn = googleSignIn;
 
   @override
   Stream<UserModel?> get authStateChanges {
@@ -110,6 +115,54 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
+  Future<UserModel> signInWithGoogle() async {
+    try {
+      // Déclencher le flux d'authentification Google
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      if (googleUser == null) {
+        throw Exception('Connexion Google annulée par l\'utilisateur');
+      }
+
+      // Obtenir les détails d'authentification de la demande
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      // Créer une nouvelle credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Une fois connecté, retourner l'UserCredential
+      final userCredential = await _auth.signInWithCredential(credential);
+
+      if (userCredential.user == null) {
+        throw Exception('Erreur lors de la connexion avec Google');
+      }
+
+      // Créer ou récupérer l'utilisateur depuis Firestore
+      return await _getUserFromFirestore(userCredential.user!.uid);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    } catch (e) {
+      final errorMessage = e.toString();
+      if (errorMessage.contains('People API has not been used')) {
+        throw Exception('L\'API People de Google n\'est pas activée. '
+            'Veuillez l\'activer dans Google Cloud Console : '
+            'https://console.developers.google.com/apis/api/people.googleapis.com/overview?project=330662716424');
+      } else if (errorMessage.contains('PERMISSION_DENIED')) {
+        throw Exception(
+            'Permission refusée. Vérifiez la configuration de votre projet Google Cloud.');
+      } else if (errorMessage.contains('CLIENT_ID')) {
+        throw Exception(
+            'Client ID Google non configuré correctement. Vérifiez votre configuration.');
+      }
+      throw Exception('Erreur lors de la connexion Google: $e');
+    }
+  }
+
+  @override
   Future<UserModel> updateUserProfile({
     String? displayName,
     String? photoUrl,
@@ -149,7 +202,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> signOut() async {
-    await _auth.signOut();
+    await Future.wait([
+      _auth.signOut(),
+      _googleSignIn.signOut(),
+    ]);
   }
 
   Future<UserModel> _getUserFromFirestore(String uid) async {

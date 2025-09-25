@@ -1,21 +1,33 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 import '../models/user_entity.dart';
 import '../services/auth_remote_datasource.dart';
 import '../services/auth_repository.dart';
 import '../services/auth_repository_impl.dart';
+import '../viewmodels/google_sign_in_usecase.dart';
 import '../viewmodels/sign_in_usecase.dart';
 import '../viewmodels/sign_out_usecase.dart';
 import '../viewmodels/sign_up_usecase.dart';
 import '../viewmodels/update_profile_usecase.dart';
+
+// Google Sign In
+final googleSignInProvider = Provider<GoogleSignIn>((ref) {
+  return GoogleSignIn(
+    scopes: ['email', 'profile'],
+    clientId:
+        '330662716424-66gufu7jagbicbvf8qa9aq5gcsahtotv.apps.googleusercontent.com',
+  );
+});
 
 // Data Sources
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
   return AuthRemoteDataSourceImpl(
     auth: FirebaseAuth.instance,
     firestore: FirebaseFirestore.instance,
+    googleSignIn: ref.watch(googleSignInProvider),
   );
 });
 
@@ -29,6 +41,10 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 // Use Cases
 final signInUseCaseProvider = Provider<SignInUseCase>((ref) {
   return SignInUseCase(ref.watch(authRepositoryProvider));
+});
+
+final googleSignInUseCaseProvider = Provider<GoogleSignInUseCase>((ref) {
+  return GoogleSignInUseCase(ref.watch(authRepositoryProvider));
 });
 
 final signUpUseCaseProvider = Provider<SignUpUseCase>((ref) {

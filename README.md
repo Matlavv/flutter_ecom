@@ -2,6 +2,12 @@
 
 Une application e-commerce complète développée avec Flutter, Firebase et une architecture MVVM/Clean.
 
+Disponible sur :
+
+```bash
+https://web-six-flax.vercel.app
+```
+
 ## 🚀 Fonctionnalités
 
 ### ✅ Authentification

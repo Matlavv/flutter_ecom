@@ -9,6 +9,7 @@ abstract class AuthRepository {
     String password,
     String displayName,
   );
+  Future<UserEntity> signInWithGoogle();
   Future<UserEntity> updateUserProfile({
     String? displayName,
     String? photoUrl,

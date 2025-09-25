@@ -12,7 +12,12 @@
                     "package_name": "com.example.flutter_ecom"
                 }
             },
-            "oauth_client": [],
+            "oauth_client": [
+                {
+                    "client_id": "330662716424-66gufu7jagbicbvf8qa9aq5gcsahtotv.apps.googleusercontent.com",
+                    "client_type": 3
+                }
+            ],
             "api_key": [
                 {
                     "current_key": "AIzaSyDeyPy6sZWeiDfsWfCRTT62xSOit4YcyMk"
@@ -20,7 +25,19 @@
             ],
             "services": {
                 "appinvite_service": {
-                    "other_platform_oauth_client": []
+                    "other_platform_oauth_client": [
+                        {
+                            "client_id": "330662716424-66gufu7jagbicbvf8qa9aq5gcsahtotv.apps.googleusercontent.com",
+                            "client_type": 3
+                        },
+                        {
+                            "client_id": "330662716424-3b0lt6n3s28i9ei8lr84or0a72ace8i4.apps.googleusercontent.com",
+                            "client_type": 2,
+                            "ios_info": {
+                                "bundle_id": "com.example.flutterEcom"
+                            }
+                        }
+                    ]
                 }
             }
         },
@@ -31,7 +48,12 @@
                     "package_name": "com.matlav.flutter_ecom"
                 }
             },
-            "oauth_client": [],
+            "oauth_client": [
+                {
+                    "client_id": "330662716424-66gufu7jagbicbvf8qa9aq5gcsahtotv.apps.googleusercontent.com",
+                    "client_type": 3
+                }
+            ],
             "api_key": [
                 {
                     "current_key": "AIzaSyDeyPy6sZWeiDfsWfCRTT62xSOit4YcyMk"
@@ -39,7 +61,19 @@
             ],
             "services": {
                 "appinvite_service": {
-                    "other_platform_oauth_client": []
+                    "other_platform_oauth_client": [
+                        {
+                            "client_id": "330662716424-66gufu7jagbicbvf8qa9aq5gcsahtotv.apps.googleusercontent.com",
+                            "client_type": 3
+                        },
+                        {
+                            "client_id": "330662716424-3b0lt6n3s28i9ei8lr84or0a72ace8i4.apps.googleusercontent.com",
+                            "client_type": 2,
+                            "ios_info": {
+                                "bundle_id": "com.example.flutterEcom"
+                            }
+                        }
+                    ]
                 }
             }
         }

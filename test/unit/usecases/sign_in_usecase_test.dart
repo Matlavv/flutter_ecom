@@ -33,6 +33,15 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<UserEntity> signInWithGoogle() async {
+    return const UserEntity(
+      id: '2',
+      email: 'google@example.com',
+      displayName: 'Google User',
+    );
+  }
+
+  @override
   Future<UserEntity> updateUserProfile({
     String? displayName,
     String? photoUrl,

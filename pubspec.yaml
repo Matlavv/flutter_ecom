@@ -41,6 +41,7 @@ dependencies:
   cloud_firestore: ^5.4.3
   firebase_storage: ^12.3.2
   firebase_analytics: ^11.3.3
+  google_sign_in: ^6.2.1
   
   # E-commerce specific dependencies
   provider: ^6.1.2

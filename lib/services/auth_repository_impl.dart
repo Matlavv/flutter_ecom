@@ -45,6 +45,12 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<UserEntity> signInWithGoogle() async {
+    final user = await _remoteDataSource.signInWithGoogle();
+    return user.toEntity();
+  }
+
+  @override
   Future<UserEntity> updateUserProfile({
     String? displayName,
     String? photoUrl,
