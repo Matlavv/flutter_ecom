@@ -47,7 +47,7 @@ android {
         create("release") {
             keyAlias = keystoreProperties["keyAlias"] as String?
             keyPassword = keystoreProperties["keyPassword"] as String?
-            storeFile = keystoreProperties["storeFile"]?.let { rootProject.file(it) }
+            storeFile = keystoreProperties["storeFile"]?.let { file(it) }
             storePassword = keystoreProperties["storePassword"] as String?
         }
     }
@@ -59,8 +59,14 @@ android {
             isShrinkResources = false
             // proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             
-            // Utiliser la signature debug pour les tests locaux
-            signingConfig = signingConfigs.getByName("debug")
+            // Utiliser la signature de release si disponible, sinon debug
+            signingConfig = if (keystorePropertiesFile.exists() && 
+                               keystoreProperties["storeFile"] != null && 
+                               keystoreProperties["storeFile"] != "your_keystore_file_path") {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
