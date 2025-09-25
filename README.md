@@ -8,11 +8,17 @@ Disponible sur :
 https://web-six-flax.vercel.app
 ```
 
+Lancer le projet localement :
+
+```bash
+flutter run -d chrome --hot
+```
+
 ## 🚀 Fonctionnalités
 
 ### ✅ Authentification
 
--   **Connexion/Inscription** avec email et mot de passe
+-   **Connexion/Inscription** avec email et mot de passe ou Google
 -   **Gestion des sessions** avec Firebase Auth
 -   **Protection des routes** - accès restreint aux utilisateurs connectés
 -   **Déconnexion sécurisée** avec confirmation
@@ -38,7 +44,7 @@ https://web-six-flax.vercel.app
 ### 👤 Profil Utilisateur
 
 -   **Page de profil** avec informations utilisateur
--   **Avatar personnalisé** avec initiales
+-   **Avatar personnalisé** changement de photo de profil
 -   **Date d'inscription** affichée
 -   **Gestion du compte** et déconnexion
 
@@ -131,42 +137,6 @@ lib/
 -   **Cloud Firestore** - Base de données NoSQL
 -   **Firebase Storage** - Stockage d'images
 -   **SharedPreferences** - Stockage local du panier
-
-#### Firestore rules
-
-```bash
-rules_version = '2';
-
-service cloud.firestore {
-  match /databases/{database}/documents {
-
-    // Règles pour les utilisateurs
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Règles pour les produits - lecture pour tous, écriture pour les utilisateurs connectés
-    match /products/{productId} {
-      allow read: if true; // Tout le monde peut lire les produits
-      allow write: if request.auth != null; // Seuls les utilisateurs connectés peuvent créer/modifier
-    }
-
-    // Règles pour les commandes
-    match /orders/{orderId} {
-      allow read, write: if request.auth != null &&
-        (resource.data.userId == request.auth.uid ||
-         request.auth.uid == resource.data.userId);
-    }
-
-    // Règles pour les paniers
-    match /carts/{cartId} {
-      allow read, write: if request.auth != null &&
-        (resource.data.userId == request.auth.uid ||
-         request.auth.uid == resource.data.userId);
-    }
-  }
-}
-```
 
 #### Architecture Patterns
 

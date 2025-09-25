@@ -78,15 +78,6 @@ jobs:
             - name: 🌐 Build web
               run: flutter build web --release
 
-            - name: 🚀 Deploy to Vercel
-              uses: amondnet/vercel-action@v25
-              with:
-                  vercel-token: ${{ secrets.VERCEL_TOKEN }}
-                  vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-                  vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-                  working-directory: ./build/web
-                  vercel-args: '--prod'
-
             - name: 📦 Upload web artifacts (fallback)
               uses: actions/upload-artifact@v4
               with:
@@ -149,8 +140,6 @@ jobs:
                   echo "- **Web Build**: ${{ needs.build-web.result }}" >> $GITHUB_STEP_SUMMARY
                   echo "- **Android Build**: ${{ needs.build-android.result }}" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  if [[ "${{ secrets.VERCEL_TOKEN }}" != "" ]]; then
-                      echo "✅ **Web déployé sur Vercel**" >> $GITHUB_STEP_SUMMARY
                   else
                       echo "⚠️ **Web build disponible en artifact**" >> $GITHUB_STEP_SUMMARY
                   fi
