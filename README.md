@@ -14,6 +14,12 @@ Lancer le projet localement :
 flutter run -d chrome --hot
 ```
 
+Lancer les tests :
+
+```bash
+flutter test
+```
+
 ## 🚀 Fonctionnalités
 
 ### ✅ Authentification

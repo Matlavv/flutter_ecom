@@ -178,10 +178,8 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                         _selectedCategory = category;
                       });
                     },
-                    selectedColor: Theme.of(context)
-                        .colorScheme
-                        .primary
-                        .withValues(alpha: 0.12),
+                    selectedColor:
+                        Theme.of(context).colorScheme.primary.withOpacity(0.12),
                     showCheckmark: false,
                     side: BorderSide(
                       color: isSelected
