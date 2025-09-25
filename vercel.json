@@ -1,15 +1,15 @@
 {
-    "github": {
-        "silent": true
-    },
-    "buildCommand": "flutter build web --release --web-renderer canvaskit",
-    "outputDirectory": "build/web",
-    "installCommand": "flutter pub get",
-    "framework": null,
-    "rewrites": [
+    "version": 2,
+    "builds": [
         {
-            "source": "/(.*)",
-            "destination": "/index.html"
+            "src": "build/web/**",
+            "use": "@vercel/static"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "/index.html"
         }
     ],
     "headers": [

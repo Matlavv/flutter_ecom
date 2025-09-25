@@ -327,7 +327,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: selectedCategory,
+                initialValue: selectedCategory,
                 decoration: const InputDecoration(
                   labelText: 'Catégorie',
                   border: OutlineInputBorder(),

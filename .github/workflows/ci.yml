@@ -6,130 +6,154 @@ on:
     pull_request:
         branches: [main]
 
+env:
+    FLUTTER_VERSION: '3.27.0'
+    JAVA_VERSION: '17'
+
 jobs:
-    test:
+    # Job unique pour tests et qualité
+    quality-check:
         runs-on: ubuntu-latest
+        outputs:
+            should-deploy: ${{ steps.check-deploy.outputs.should-deploy }}
 
         steps:
-            - name: Checkout code
+            - name: 📥 Checkout code
               uses: actions/checkout@v4
 
-            - name: Setup Flutter
+            - name: 🐦 Setup Flutter
               uses: subosito/flutter-action@v2
               with:
-                  flutter-version: '3.27.0'
+                  flutter-version: ${{ env.FLUTTER_VERSION }}
                   channel: 'stable'
+                  cache: true # Cache Flutter SDK
 
-            - name: Install dependencies
+            - name: 📦 Install dependencies
               run: flutter pub get
 
-            - name: Verify formatting
+            - name: 🎨 Verify formatting
               run: dart format --set-exit-if-changed .
 
-            - name: Analyze code
+            - name: 🔍 Analyze code
               run: flutter analyze --no-fatal-infos
 
-            - name: Run tests with coverage
+            - name: 🧪 Run tests with coverage
               run: flutter test --coverage
 
-            - name: Upload coverage to Codecov
+            - name: 📊 Upload coverage
               uses: codecov/codecov-action@v3
               with:
                   file: coverage/lcov.info
                   flags: unittests
-                  name: codecov-umbrella
                   fail_ci_if_error: false
 
+            - name: ✅ Check deployment conditions
+              id: check-deploy
+              run: |
+                  if [[ "${{ github.ref }}" == "refs/heads/main" && "${{ github.event_name }}" == "push" ]]; then
+                      echo "should-deploy=true" >> $GITHUB_OUTPUT
+                  else
+                      echo "should-deploy=false" >> $GITHUB_OUTPUT
+                  fi
+
+    # Build parallèle Web + Android (plus rapide)
     build-web:
         runs-on: ubuntu-latest
-        needs: test
+        needs: quality-check
+        if: needs.quality-check.outputs.should-deploy == 'true'
 
         steps:
-            - name: Checkout code
+            - name: 📥 Checkout code
               uses: actions/checkout@v4
 
-            - name: Setup Flutter
+            - name: 🐦 Setup Flutter
               uses: subosito/flutter-action@v2
               with:
-                  flutter-version: '3.27.0'
+                  flutter-version: ${{ env.FLUTTER_VERSION }}
                   channel: 'stable'
+                  cache: true
 
-            - name: Install dependencies
+            - name: 📦 Install dependencies
               run: flutter pub get
 
-            - name: Build web
-              run: flutter build web --release
+            - name: 🌐 Build web
+              run: flutter build web --release --web-renderer canvaskit
 
-            - name: Upload web build artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                  name: web-build
-                  path: build/web/
-                  retention-days: 30
-
-    build-android:
-        runs-on: ubuntu-latest
-        needs: test
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Setup Java
-              uses: actions/setup-java@v4
-              with:
-                  distribution: 'zulu'
-                  java-version: '17'
-
-            - name: Setup Flutter
-              uses: subosito/flutter-action@v2
-              with:
-                  flutter-version: '3.27.0'
-                  channel: 'stable'
-
-            - name: Install dependencies
-              run: flutter pub get
-
-            - name: Build APK (Debug signing)
-              run: flutter build apk --release --target-platform android-arm,android-arm64,android-x64
-
-            - name: Build AAB (Debug signing)
-              run: flutter build appbundle --release --target-platform android-arm,android-arm64,android-x64
-
-            - name: Upload APK artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                  name: apk-build
-                  path: build/app/outputs/flutter-apk/
-                  retention-days: 30
-
-            - name: Upload AAB artifacts
-              uses: actions/upload-artifact@v4
-              with:
-                  name: aab-build
-                  path: build/app/outputs/bundle/release/
-                  retention-days: 30
-
-    deploy-web:
-        runs-on: ubuntu-latest
-        needs: [test, build-web]
-        if: github.ref == 'refs/heads/main'
-
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
-
-            - name: Download web build artifacts
-              uses: actions/download-artifact@v4
-              with:
-                  name: web-build
-                  path: build/web/
-
-            - name: Deploy to Vercel
+            - name: 🚀 Deploy to Vercel
               uses: amondnet/vercel-action@v25
               with:
                   vercel-token: ${{ secrets.VERCEL_TOKEN }}
                   vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
                   vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-                  working-directory: ./
-                  vercel-args: '--prod'
+                  working-directory: ./build/web
+                  vercel-args: '--prod --yes'
+
+            - name: 📦 Upload web artifacts (fallback)
+              uses: actions/upload-artifact@v4
+              with:
+                  name: web-build-${{ github.sha }}
+                  path: build/web/
+                  retention-days: 7
+
+    build-android:
+        runs-on: ubuntu-latest
+        needs: quality-check
+        if: needs.quality-check.outputs.should-deploy == 'true'
+
+        steps:
+            - name: 📥 Checkout code
+              uses: actions/checkout@v4
+
+            - name: ☕ Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  distribution: 'zulu'
+                  java-version: ${{ env.JAVA_VERSION }}
+                  cache: 'gradle' # Cache Gradle
+
+            - name: 🐦 Setup Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  flutter-version: ${{ env.FLUTTER_VERSION }}
+                  channel: 'stable'
+                  cache: true
+
+            - name: 📦 Install dependencies
+              run: flutter pub get
+
+            - name: 🤖 Build Android (Debug signing)
+              run: |
+                  flutter build apk --release --target-platform android-arm64
+                  flutter build appbundle --release --target-platform android-arm64
+
+            - name: 📱 Upload Android artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: android-build-${{ github.sha }}
+                  path: |
+                      build/app/outputs/flutter-apk/
+                      build/app/outputs/bundle/release/
+                  retention-days: 7
+
+    # Job de résumé
+    deployment-summary:
+        runs-on: ubuntu-latest
+        needs: [quality-check, build-web, build-android]
+        if: always() && needs.quality-check.outputs.should-deploy == 'true'
+
+        steps:
+            - name: 📋 Deployment Summary
+              run: |
+                  echo "## 🚀 Déploiement CI/CD Résumé" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Web Build**: ${{ needs.build-web.result }}" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Android Build**: ${{ needs.build-android.result }}" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  if [[ "${{ secrets.VERCEL_TOKEN }}" != "" ]]; then
+                      echo "✅ **Web déployé sur Vercel**" >> $GITHUB_STEP_SUMMARY
+                  else
+                      echo "⚠️ **Web build disponible en artifact**" >> $GITHUB_STEP_SUMMARY
+                  fi
+                  echo "📱 **Android APK/AAB disponibles en artifacts**" >> $GITHUB_STEP_SUMMARY

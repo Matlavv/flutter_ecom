@@ -1,26 +1,74 @@
-name: Production Build & Deploy
+name: Production Release
 
 on:
-    # Déclenchement automatique sur les tags de version
+    # Déclenchement automatique sur tags
     push:
-        tags:
-            - 'v*.*.*'
+        tags: ['v*.*.*']
 
     # Déclenchement manuel
     workflow_dispatch:
         inputs:
             version_name:
-                description: 'Version name (ex: 1.0.1)'
+                description: 'Version (ex: 1.0.1)'
                 required: true
                 default: '1.0.1'
             version_code:
-                description: 'Version code (ex: 2)'
+                description: 'Build number (ex: 2)'
                 required: true
                 default: '2'
+            build_android:
+                description: 'Build Android AAB'
+                type: boolean
+                default: true
+            build_web:
+                description: 'Build & Deploy Web'
+                type: boolean
+                default: true
+
+env:
+    FLUTTER_VERSION: '3.27.0'
+    JAVA_VERSION: '17'
 
 jobs:
-    build-production-android:
+    # Tests de production (plus stricts)
+    production-quality:
         runs-on: ubuntu-latest
+
+        steps:
+            - name: 📥 Checkout code
+              uses: actions/checkout@v4
+
+            - name: 🐦 Setup Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  flutter-version: ${{ env.FLUTTER_VERSION }}
+                  channel: 'stable'
+                  cache: true
+
+            - name: 📦 Install dependencies
+              run: flutter pub get
+
+            - name: 🔍 Analyze (strict)
+              run: flutter analyze --fatal-infos
+
+            - name: 🧪 Run all tests
+              run: flutter test --coverage
+
+            - name: 📊 Coverage check
+              run: |
+                  COVERAGE=$(lcov --summary coverage/lcov.info | grep -o 'lines......: [0-9.]*%' | grep -o '[0-9.]*')
+                  echo "Coverage: $COVERAGE%"
+                  if (( $(echo "$COVERAGE < 70" | bc -l) )); then
+                      echo "❌ Coverage trop faible: $COVERAGE% (minimum: 70%)"
+                      exit 1
+                  fi
+                  echo "✅ Coverage OK: $COVERAGE%"
+
+    # Build Android Production (conditionnel)
+    build-android-production:
+        runs-on: ubuntu-latest
+        needs: production-quality
+        if: ${{ inputs.build_android != false }}
 
         steps:
             - name: 📥 Checkout code
@@ -30,89 +78,123 @@ jobs:
               uses: actions/setup-java@v4
               with:
                   distribution: 'zulu'
-                  java-version: '17'
+                  java-version: ${{ env.JAVA_VERSION }}
+                  cache: 'gradle'
 
             - name: 🐦 Setup Flutter
               uses: subosito/flutter-action@v2
               with:
-                  flutter-version: '3.27.0'
+                  flutter-version: ${{ env.FLUTTER_VERSION }}
                   channel: 'stable'
+                  cache: true
 
             - name: 📦 Install dependencies
               run: flutter pub get
 
-            - name: 🧪 Run tests
-              run: flutter test --coverage
-
-            - name: 🔍 Analyze code
-              run: flutter analyze
-
-            - name: 🔐 Decode Android keystore
+            - name: 🔐 Setup Android signing
               env:
                   ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-              run: |
-                  echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
-
-            - name: 📝 Create key.properties
-              env:
                   KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
                   KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
               run: |
-                  echo "storePassword=$KEYSTORE_PASSWORD" > android/key.properties
-                  echo "keyPassword=$KEY_PASSWORD" >> android/key.properties
-                  echo "keyAlias=upload" >> android/key.properties
-                  echo "storeFile=upload-keystore.jks" >> android/key.properties
+                  echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+                  cat > android/key.properties << EOF
+                  storePassword=$KEYSTORE_PASSWORD
+                  keyPassword=$KEY_PASSWORD
+                  keyAlias=upload
+                  storeFile=upload-keystore.jks
+                  EOF
 
             - name: 🏗️ Build production AAB
               run: |
                   flutter build appbundle --release \
                     --target-platform android-arm,android-arm64,android-x64 \
-                    --build-name=${{ github.event.inputs.version_name || '1.0.0' }} \
-                    --build-number=${{ github.event.inputs.version_code || github.run_number }}
+                    --build-name=${{ inputs.version_name || github.ref_name }} \
+                    --build-number=${{ inputs.version_code || github.run_number }}
 
-            - name: 📱 Upload AAB to artifacts
+            - name: 📱 Upload production AAB
               uses: actions/upload-artifact@v4
               with:
-                  name: production-aab-${{ github.event.inputs.version_name || github.ref_name }}
+                  name: production-aab-${{ inputs.version_name || github.ref_name }}
                   path: build/app/outputs/bundle/release/app-release.aab
                   retention-days: 90
 
-            - name: 📊 AAB Info
+            - name: 🧹 Cleanup secrets
+              if: always()
               run: |
-                  echo "🎉 AAB de production généré avec succès !"
-                  echo "📱 Fichier: app-release.aab"
-                  echo "📏 Taille: $(du -h build/app/outputs/bundle/release/app-release.aab | cut -f1)"
-                  echo "🔐 Signature: Production"
-                  echo "📦 Package: com.matlav.flutter_ecom"
-                  echo "🏷️ Version: ${{ github.event.inputs.version_name || github.ref_name }}"
+                  rm -f android/app/upload-keystore.jks android/key.properties
 
-    # Job pour préparer l'AAB pour upload manuel
-    prepare-play-store-release:
-        needs: build-production-android
+    # Build Web Production (conditionnel)
+    build-web-production:
         runs-on: ubuntu-latest
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+        needs: production-quality
+        if: ${{ inputs.build_web != false }}
 
         steps:
-            - name: 📥 Download AAB
-              uses: actions/download-artifact@v4
-              with:
-                  name: production-aab-${{ github.ref_name }}
+            - name: 📥 Checkout code
+              uses: actions/checkout@v4
 
-            - name: 📋 Release Instructions
+            - name: 🐦 Setup Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  flutter-version: ${{ env.FLUTTER_VERSION }}
+                  channel: 'stable'
+                  cache: true
+
+            - name: 📦 Install dependencies
+              run: flutter pub get
+
+            - name: 🌐 Build web (optimized)
+              run: flutter build web --release --web-renderer canvaskit --dart-define=FLUTTER_WEB_USE_SKIA=true
+
+            - name: 🚀 Deploy to Vercel
+              uses: amondnet/vercel-action@v25
+              with:
+                  vercel-token: ${{ secrets.VERCEL_TOKEN }}
+                  vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+                  vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+                  working-directory: ./build/web
+                  vercel-args: '--prod --yes'
+
+            - name: 📦 Upload web build
+              uses: actions/upload-artifact@v4
+              with:
+                  name: production-web-${{ inputs.version_name || github.ref_name }}
+                  path: build/web/
+                  retention-days: 90
+
+    # Instructions de release
+    release-instructions:
+        runs-on: ubuntu-latest
+        needs: [production-quality, build-android-production, build-web-production]
+        if: always() && needs.production-quality.result == 'success'
+
+        steps:
+            - name: 📋 Release Summary
               run: |
-                  echo "🎉 AAB de production prêt pour Google Play Store !"
-                  echo ""
-                  echo "📱 Fichier à télécharger : app-release.aab"
-                  echo "📦 Package : com.matlav.flutter_ecom"
-                  echo "🏷️ Version : ${{ github.ref_name }}"
-                  echo ""
-                  echo "🚀 Étapes pour publier :"
-                  echo "1. Téléchargez l'artifact 'production-aab-${{ github.ref_name }}'"
-                  echo "2. Allez sur https://play.google.com/console"
-                  echo "3. Sélectionnez votre app 'Flutter Ecom'"
-                  echo "4. Production → Créer une version"
-                  echo "5. Uploadez app-release.aab"
-                  echo "6. Ajoutez les notes de version"
-                  echo "7. Examiner et déployer"
-                  echo ""
-                  echo "✅ Votre app sera en ligne après révision Google (1-3 jours)"
+                  echo "## 🎉 Release ${{ inputs.version_name || github.ref_name }} Ready!" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "### 📱 Android" >> $GITHUB_STEP_SUMMARY
+                  if [[ "${{ needs.build-android-production.result }}" == "success" ]]; then
+                      echo "✅ **AAB de production généré**" >> $GITHUB_STEP_SUMMARY
+                      echo "- Téléchargez l'artifact \`production-aab-${{ inputs.version_name || github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+                      echo "- Uploadez sur [Google Play Console](https://play.google.com/console)" >> $GITHUB_STEP_SUMMARY
+                  else
+                      echo "⏭️ **Build Android ignoré**" >> $GITHUB_STEP_SUMMARY
+                  fi
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "### 🌐 Web" >> $GITHUB_STEP_SUMMARY
+                  if [[ "${{ needs.build-web-production.result }}" == "success" ]]; then
+                      if [[ "${{ secrets.VERCEL_TOKEN }}" != "" ]]; then
+                          echo "✅ **Déployé automatiquement sur Vercel**" >> $GITHUB_STEP_SUMMARY
+                      else
+                          echo "✅ **Build web généré** (artifact disponible)" >> $GITHUB_STEP_SUMMARY
+                      fi
+                  else
+                      echo "⏭️ **Build Web ignoré**" >> $GITHUB_STEP_SUMMARY
+                  fi
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "### 📊 Métriques" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Version**: ${{ inputs.version_name || github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Build**: ${{ inputs.version_code || github.run_number }}" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
