@@ -20,7 +20,6 @@ class ProductCard extends ConsumerWidget {
         onTap: onTap ?? () => context.go('/product/${product.id}'),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
           children: [
             // Visuel produit (ratio constant)
             AspectRatio(
@@ -39,133 +38,136 @@ class ProductCard extends ConsumerWidget {
             ),
 
             // Contenu
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          product.title,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            product.title,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            product.category,
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Flexible(
+                      child: Text(
+                        product.description,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.color
+                                ?.withValues(alpha: 0.8)),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          product.category,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w600,
+                    ),
+                    const Spacer(),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${product.price.toStringAsFixed(2)} €',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                               ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    product.description,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.color
-                            ?.withValues(alpha: 0.8)),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${product.price.toStringAsFixed(2)} €',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            Text(
-                              product.stock > 0
-                                  ? '${product.stock} en stock'
-                                  : 'Rupture de stock',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodySmall
-                                  ?.copyWith(
-                                    color: product.stock > 0
-                                        ? Colors.green[600]
-                                        : Colors.red[500],
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        height: 40,
-                        child: Builder(
-                          builder: (context) {
-                            final scheme = Theme.of(context).colorScheme;
-                            final bool isEnabled = product.stock > 0;
-                            final Color bg = scheme.primary;
-                            final Color fg = isEnabled
-                                ? scheme.onPrimary
-                                : Theme.of(context).disabledColor;
-                            return ElevatedButton.icon(
-                              onPressed: isEnabled
-                                  ? () => _addToCart(context, ref)
-                                  : null,
-                              icon: Icon(
-                                Icons.add_shopping_cart,
-                                size: 18,
-                                color: fg,
+                              Text(
+                                product.stock > 0
+                                    ? '${product.stock} en stock'
+                                    : 'Rupture de stock',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall
+                                    ?.copyWith(
+                                      color: product.stock > 0
+                                          ? Colors.green[600]
+                                          : Colors.red[500],
+                                    ),
                               ),
-                              label: Text(
-                                'Ajouter',
-                                style: TextStyle(color: fg),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: bg,
-                                foregroundColor: fg,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                                minimumSize: const Size(100, 40),
-                              ),
-                            );
-                          },
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        SizedBox(
+                          height: 32,
+                          child: Builder(
+                            builder: (context) {
+                              final scheme = Theme.of(context).colorScheme;
+                              final bool isEnabled = product.stock > 0;
+                              final Color bg = scheme.primary;
+                              final Color fg = isEnabled
+                                  ? scheme.onPrimary
+                                  : Theme.of(context).disabledColor;
+                              return ElevatedButton.icon(
+                                onPressed: isEnabled
+                                    ? () => _addToCart(context, ref)
+                                    : null,
+                                icon: Icon(
+                                  Icons.add_shopping_cart,
+                                  size: 18,
+                                  color: fg,
+                                ),
+                                label: Text(
+                                  'Ajouter',
+                                  style: TextStyle(color: fg),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: bg,
+                                  foregroundColor: fg,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
+                                  minimumSize: const Size(100, 40),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

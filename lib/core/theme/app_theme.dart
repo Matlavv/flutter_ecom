@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Couleurs principales (seed)
+  // Couleurs principales
   static const Color primaryColor = Color(0xFF2E7D32); // Vert nature
   static const Color secondaryColor = Color(0xFF4CAF50); // Vert clair
   static const Color accentColor = Color(0xFFFF9800); // Orange

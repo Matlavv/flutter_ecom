@@ -26,7 +26,11 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ProductCard(product: product),
+            body: SizedBox(
+              width: 200,
+              height: 500,
+              child: ProductCard(product: product),
+            ),
           ),
         ),
       );
@@ -34,9 +38,10 @@ void main() {
       // Assert
       expect(find.text('Test Product'), findsOneWidget);
       expect(find.text('Test Description'), findsOneWidget);
-      expect(find.text('29,99 €'), findsOneWidget);
+      expect(find.text('29.99 €'), findsOneWidget);
       expect(find.text('Electronics'), findsOneWidget);
       expect(find.text('En stock'), findsOneWidget);
+      expect(find.text('10 en stock'), findsOneWidget);
     });
 
     testWidgets('should display out of stock when stock is 0',
@@ -47,12 +52,17 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ProductCard(product: outOfStockProduct),
+            body: SizedBox(
+              width: 200,
+              height: 520,
+              child: ProductCard(product: outOfStockProduct),
+            ),
           ),
         ),
       );
 
       // Assert
+      expect(find.text('Rupture'), findsOneWidget);
       expect(find.text('Rupture de stock'), findsOneWidget);
     });
 
@@ -64,13 +74,18 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ProductCard(product: lowStockProduct),
+            body: SizedBox(
+              width: 200,
+              height: 500,
+              child: ProductCard(product: lowStockProduct),
+            ),
           ),
         ),
       );
 
       // Assert
-      expect(find.text('Stock faible'), findsOneWidget);
+      expect(find.text('En stock'), findsOneWidget);
+      expect(find.text('3 en stock'), findsOneWidget);
     });
 
     testWidgets('should call onTap when tapped', (WidgetTester tester) async {
@@ -80,9 +95,13 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ProductCard(
-              product: product,
-              onTap: () => tapped = true,
+            body: SizedBox(
+              width: 200,
+              height: 500,
+              child: ProductCard(
+                product: product,
+                onTap: () => tapped = true,
+              ),
             ),
           ),
         ),

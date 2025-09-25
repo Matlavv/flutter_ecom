@@ -357,7 +357,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                   priceController.text.isNotEmpty) {
                 try {
                   final product = ProductEntity(
-                    id: '', // Sera généré par Firestore
+                    id: '', // généré par Firestore
                     title: titleController.text,
                     price: double.parse(priceController.text),
                     thumbnail: thumbnailController.text,

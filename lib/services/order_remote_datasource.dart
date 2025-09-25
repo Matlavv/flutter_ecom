@@ -41,7 +41,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
           items.fold(0.0, (total, item) => total + item.totalPrice);
 
       final order = OrderModel(
-        id: '', // Sera généré par Firestore
+        id: '', // généré par Firestore
         userId: userId,
         items: items,
         totalAmount: totalAmount,

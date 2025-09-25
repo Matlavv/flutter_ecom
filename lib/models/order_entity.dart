@@ -29,7 +29,7 @@ class OrderEntity {
     return other is OrderEntity &&
         other.id == id &&
         other.userId == userId &&
-        other.items == items &&
+        _listEquals(other.items, items) &&
         other.totalAmount == totalAmount &&
         other.status == status &&
         other.createdAt == createdAt &&
@@ -41,11 +41,27 @@ class OrderEntity {
   int get hashCode {
     return id.hashCode ^
         userId.hashCode ^
-        items.hashCode ^
+        _listHashCode(items) ^
         totalAmount.hashCode ^
         status.hashCode ^
         createdAt.hashCode ^
         shippingAddress.hashCode ^
         paymentMethod.hashCode;
+  }
+
+  bool _listEquals(List<CartItemEntity> a, List<CartItemEntity> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  int _listHashCode(List<CartItemEntity> list) {
+    int hash = 0;
+    for (var item in list) {
+      hash ^= item.hashCode;
+    }
+    return hash;
   }
 }
