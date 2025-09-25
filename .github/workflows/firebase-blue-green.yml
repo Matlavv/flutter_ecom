@@ -194,14 +194,14 @@ jobs:
                   echo "## 🎉 Déploiement Blue-Green réussi!" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "### 📋 Détails:" >> $GITHUB_STEP_SUMMARY
-                  echo "- **Channel déployé:** $INACTIVE_CHANNEL" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Channel déployé:** ${{ needs.prepare.outputs.inactive-channel }}" >> $GITHUB_STEP_SUMMARY
                   echo "- **Status:** ✅ Succès" >> $GITHUB_STEP_SUMMARY
                   echo "- **Smoke tests:** ✅ Réussis" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "### 🔗 URLs:" >> $GITHUB_STEP_SUMMARY
                   echo "- **Production:** https://$PROJECT_ID.web.app" >> $GITHUB_STEP_SUMMARY
-                  echo "- **Blue Channel:** https://$PROJECT_ID--blue-$(echo $PROJECT_ID | tr '[:upper:]' '[:lower:]').web.app" >> $GITHUB_STEP_SUMMARY
-                  echo "- **Green Channel:** https://$PROJECT_ID--green-$(echo $PROJECT_ID | tr '[:upper:]' '[:lower:]').web.app" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Blue Channel:** https://$PROJECT_ID--blue-loai3kdo.web.app" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Green Channel:** https://$PROJECT_ID--green-hexbm263.web.app" >> $GITHUB_STEP_SUMMARY
 
     rollback:
         name: 🔙 Rollback

@@ -1,33 +1,58 @@
 # 🛒 Flutter E-Commerce App
 
-Une application e-commerce complète développée avec Flutter, Firebase et une architecture MVVM/Clean.
+**Groupe de Alexis H et Mathis L**
 
-Disponible sur :
+Une application e-commerce complète développée avec Flutter, Firebase et une architecture MVVM/Clean, avec CI/CD automatisée et déploiement Blue-Green.
+
+## 🌐 Déploiements
+
+### Production
+
+-   **Firebase Hosting** : https://flutter-app-ecom.web.app
+-   **Vercel (Legacy)** : https://web-six-flax.vercel.app
+
+### Channels de déploiement (Blue-Green)
+
+-   **Blue Channel** : https://flutter-app-ecom--blue-loai3kdo.web.app
+-   **Green Channel** : https://flutter-app-ecom--green-hexbm263.web.app
+
+## 🚀 Démarrage rapide
+
+### Prérequis
+
+-   Flutter SDK (3.0+)
+-   Dart SDK (3.0+)
+-   Firebase CLI
+-   FlutterFire CLI
 
 ```bash
-https://web-six-flax.vercel.app
-```
+# Cloner le projet
+git clone https://github.com/Matlavv/flutter_ecom
+cd flutter_ecom
 
-Lancer le projet localement :
+# Installer les dépendances
+flutter pub get
 
-```bash
+# Lancer en développement
 flutter run -d chrome --hot
-```
 
-Lancer les tests :
-
-```bash
+# Lancer les tests
 flutter test
+
+# Build pour production
+flutter build web --release
 ```
 
 ## 🚀 Fonctionnalités
 
 ### ✅ Authentification
 
--   **Connexion/Inscription** avec email et mot de passe ou Google
+-   **Connexion/Inscription** avec email et mot de passe
+-   **🔐 Google Sign-In** - Authentification OAuth2 avec Google
 -   **Gestion des sessions** avec Firebase Auth
 -   **Protection des routes** - accès restreint aux utilisateurs connectés
 -   **Déconnexion sécurisée** avec confirmation
+-   **Gestion d'erreurs** avec messages explicites
 
 ### 🛍️ Catalogue & Produits
 
@@ -139,10 +164,12 @@ lib/
 
 #### Backend & Services
 
--   **Firebase Auth** - Authentification utilisateur
--   **Cloud Firestore** - Base de données NoSQL
--   **Firebase Storage** - Stockage d'images
+-   **Firebase Auth** - Authentification utilisateur + Google OAuth2
+-   **Cloud Firestore** - Base de données NoSQL temps réel
+-   **Firebase Storage** - Stockage d'images et assets
+-   **Firebase Hosting** - Hébergement web avec CDN global
 -   **SharedPreferences** - Stockage local du panier
+-   **Google Sign-In** - Authentification OAuth2 multi-plateforme
 
 #### Architecture Patterns
 
@@ -154,30 +181,6 @@ lib/
 -   **Single Responsibility Principle** - Chaque classe a une responsabilité unique
 
 ## 🔧 Configuration
-
-### Prérequis
-
--   Flutter SDK (3.0+)
--   Dart SDK (3.0+)
--   Firebase CLI
--   FlutterFire CLI
-
-### Installation
-
-```bash
-# Cloner le projet
-git clone <repository-url>
-cd flutter_ecom
-
-# Installer les dépendances
-flutter pub get
-
-# Configurer Firebase
-flutterfire configure
-
-# Lancer l'application
-flutter run -d chrome
-```
 
 ## 🧪 Tests
 
@@ -207,8 +210,6 @@ cp .env.example .env
 # Éditer avec vos vraies valeurs Firebase
 nano .env
 ```
-
-**⚠️ Important** : Le fichier `.env` contient vos clés secrètes et ne doit JAMAIS être commité !
 
 ## 📱 Plateformes Supportées
 
@@ -269,27 +270,119 @@ match /orders/{orderId} {
 -   **Outils** : Flutter Test + Coverage
 -   **Structure** : Tests organisés par couche (domain, data, presentation)
 
-## 🚀 Déploiement
+## 🚀 Déploiement & CI/CD
 
-### Web (Firebase Hosting)
+### 🔄 Stratégie Blue-Green avec Firebase Hosting
+
+L'application utilise une stratégie de déploiement **Blue-Green** automatisée pour des déploiements sans interruption :
+
+#### Workflow automatique
+
+1. **Build** - Compilation et tests automatiques
+2. **Deploy** - Déploiement sur le channel inactif (Blue/Green)
+3. **Smoke Tests** - Vérification automatique de l'application
+4. **Promotion** - Basculement instantané vers la production
+5. **Rollback** - Retour rapide en cas de problème
+
+#### Channels disponibles
+
+-   **🔵 Blue Channel** : https://flutter-app-ecom--blue-loai3kdo.web.app
+-   **🟢 Green Channel** : https://flutter-app-ecom--green-hexbm263.web.app
+-   **🌐 Production** : https://flutter-app-ecom.web.app
+
+### 🤖 CI/CD avec GitHub Actions
+
+#### Workflows automatisés
+
+**1. 🔄 Firebase Blue-Green Deployment** (`.github/workflows/firebase-blue-green.yml`)
+
+-   **Déclenchement** : Push sur `main` ou manuel
+-   **Étapes** :
+    -   ✅ Build Flutter Web
+    -   ✅ Tests automatiques (24 tests)
+    -   ✅ Déploiement sur channel inactif
+    -   ✅ Smoke tests (accessibilité, contenu, assets)
+    -   ✅ Promotion automatique vers production
+    -   ✅ Notifications de statut
+
+**2. 🧪 CI Tests** (`.github/workflows/ci.yml`)
+
+-   **Déclenchement** : Pull requests
+-   **Vérifications** :
+    -   ✅ Tests unitaires et widgets
+    -   ✅ Analyse statique (linting)
+    -   ✅ Formatage du code
+    -   ✅ Couverture de code
+
+#### Commandes de déploiement
 
 ```bash
-# Build pour production
-flutter build web
+# Déploiement automatique (via GitHub Actions)
+git push origin main
 
-# Déployer
+# Déploiement manuel local
+flutter build web --release
 firebase deploy --only hosting
+
+# Déploiement sur un channel spécifique
+firebase deploy --only hosting:blue
+firebase deploy --only hosting:green
+
+# Promotion d'un channel vers production
+firebase hosting:clone flutter-app-ecom:blue flutter-app-ecom:live
+
+# Rollback rapide
+firebase hosting:clone flutter-app-ecom:green flutter-app-ecom:live
 ```
 
-### Android (Play Store)
+#### Gestion des secrets
+
+-   **FIREBASE_SERVICE_ACCOUNT** - Service account JSON pour GitHub Actions
+-   **Configuration automatique** des domaines autorisés pour Google Sign-In
+-   **Variables d'environnement** sécurisées dans GitHub Secrets
+
+### 📱 Déploiement Mobile
+
+#### Android (Play Store)
 
 ```bash
-# Build AAB
+# Build AAB pour Play Store
 flutter build appbundle --release
 
-# Build APK
+# Build APK pour distribution directe
 flutter build apk --release
+
+# Génération des clés de signature
+keytool -genkey -v -keystore android/app/upload-keystore.jks
 ```
+
+#### iOS (App Store)
+
+```bash
+# Build iOS
+flutter build ios --release
+
+# Archive pour App Store
+flutter build ipa --release
+```
+
+### 🔧 Configuration des domaines
+
+#### Google Sign-In
+
+Les domaines suivants sont configurés pour l'authentification Google :
+
+-   `https://flutter-app-ecom.web.app` (Production)
+-   `https://flutter-app-ecom--blue-loai3kdo.web.app` (Blue)
+-   `https://flutter-app-ecom--green-hexbm263.web.app` (Green)
+-   `http://localhost:*` (Développement)
+
+#### Firebase Hosting
+
+-   **CDN Global** - Distribution mondiale avec cache intelligent
+-   **HTTPS automatique** - Certificats SSL/TLS gérés automatiquement
+-   **Compression** - Gzip/Brotli pour optimiser les performances
+-   **Headers de sécurité** - CSP, HSTS, X-Frame-Options
 
 ## 📊 Fonctionnalités Techniques
 
@@ -330,9 +423,49 @@ flutter build apk --release
 -   **Dialogs** pour les confirmations
 -   **SnackBars** pour les notifications
 
-### CI/CD
+## 🔧 Outils de Développement
 
--   **GitHub Actions** pour l'automatisation
--   **Tests automatiques** à chaque push
--   **Build automatique** pour le déploiement
--   **Linting** et formatage automatique
+### Qualité de Code
+
+-   **Flutter Lints** - Règles de linting strictes
+-   **Dart Format** - Formatage automatique du code
+-   **Import Sorter** - Organisation automatique des imports
+-   **Coverage** - Mesure de la couverture de tests (≥50%)
+
+### CI/CD & DevOps
+
+-   **GitHub Actions** - Workflows automatisés
+-   **Firebase CLI** - Déploiement et gestion
+-   **Blue-Green Deployment** - Déploiements sans interruption
+-   **Smoke Testing** - Vérifications automatiques post-déploiement
+-   **Rollback automatique** - Retour rapide en cas d'erreur
+
+### Monitoring & Analytics
+
+-   **Firebase Analytics** - Suivi des utilisateurs et événements
+-   **Performance Monitoring** - Métriques de performance temps réel
+-   **Crash Reporting** - Détection et rapport d'erreurs
+-   **A/B Testing** - Tests de fonctionnalités (via Firebase)
+
+## 🛡️ Sécurité & Performance
+
+### Authentification Sécurisée
+
+-   **OAuth2 Google** - Standard industriel pour l'authentification
+-   **JWT Tokens** - Gestion sécurisée des sessions
+-   **Domaines autorisés** - Protection contre les attaques CSRF
+-   **Validation côté serveur** - Vérification des tokens Firebase
+
+### Performance Web
+
+-   **Tree Shaking** - Élimination du code mort (99.4% réduction des icônes)
+-   **Code Splitting** - Chargement progressif des ressources
+-   **Service Worker** - Cache intelligent pour PWA
+-   **Compression** - Gzip/Brotli pour réduire la taille des assets
+
+### Optimisations
+
+-   **Lazy Loading** - Chargement à la demande des images
+-   **Caching Strategy** - Cache multi-niveaux (CDN, Browser, App)
+-   **Bundle Optimization** - Minimisation des bundles JavaScript
+-   **PWA Ready** - Installation native sur tous les appareils
