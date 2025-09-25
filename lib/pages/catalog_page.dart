@@ -3,10 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../models/product_entity.dart';
-import '../viewmodels/auth_providers.dart';
-import '../viewmodels/product_providers.dart';
-import '../widgets/product_card.dart';
 import '../viewmodels/app_providers.dart';
+import '../widgets/product_card.dart';
 
 class CatalogPage extends ConsumerStatefulWidget {
   const CatalogPage({super.key});
@@ -242,9 +240,11 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
             // Grille adaptative: 2 colonnes en mobile, 3 tablette, 4 desktop
             final width = constraints.maxWidth;
             int crossAxisCount = 2;
-            if (width >= 1200)
+            if (width >= 1200) {
               crossAxisCount = 4;
-            else if (width >= 800) crossAxisCount = 3;
+            } else if (width >= 800) {
+              crossAxisCount = 3;
+            }
 
             return GridView.builder(
               padding: const EdgeInsets.all(16),
@@ -327,7 +327,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: selectedCategory,
+                initialValue: selectedCategory,
                 decoration: const InputDecoration(
                   labelText: 'Catégorie',
                   border: OutlineInputBorder(),
@@ -379,9 +379,9 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                   }
                 } catch (e) {
                   if (mounted) {
-                    ScaffoldMessenger.of(
-                      context,
-                    ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Erreur: $e')),
+                    );
                   }
                 }
               }

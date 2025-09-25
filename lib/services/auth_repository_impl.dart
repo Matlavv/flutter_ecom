@@ -45,6 +45,18 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<UserEntity> updateUserProfile({
+    String? displayName,
+    String? photoUrl,
+  }) async {
+    final user = await _remoteDataSource.updateUserProfile(
+      displayName: displayName,
+      photoUrl: photoUrl,
+    );
+    return user.toEntity();
+  }
+
+  @override
   Future<void> signOut() {
     return _remoteDataSource.signOut();
   }

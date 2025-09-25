@@ -12,6 +12,10 @@ abstract class AuthRemoteDataSource {
     String password,
     String displayName,
   );
+  Future<UserModel> updateUserProfile({
+    String? displayName,
+    String? photoUrl,
+  });
   Future<void> signOut();
 }
 
@@ -102,6 +106,44 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       return user;
     } on FirebaseAuthException catch (e) {
       throw _handleAuthException(e);
+    }
+  }
+
+  @override
+  Future<UserModel> updateUserProfile({
+    String? displayName,
+    String? photoUrl,
+  }) async {
+    try {
+      final firebaseUser = _auth.currentUser;
+      if (firebaseUser == null) {
+        throw Exception('Utilisateur non connecté');
+      }
+
+      // Mettre à jour le profil Firebase Auth
+      await firebaseUser.updateDisplayName(displayName);
+      if (photoUrl != null) {
+        await firebaseUser.updatePhotoURL(photoUrl);
+      }
+
+      // Mettre à jour le document Firestore
+      final updateData = <String, dynamic>{};
+      if (displayName != null) updateData['displayName'] = displayName;
+      if (photoUrl != null) updateData['photoUrl'] = photoUrl;
+
+      if (updateData.isNotEmpty) {
+        await _firestore
+            .collection('users')
+            .doc(firebaseUser.uid)
+            .update(updateData);
+      }
+
+      // Retourner l'utilisateur mis à jour
+      return await _getUserFromFirestore(firebaseUser.uid);
+    } on FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    } catch (e) {
+      throw Exception('Erreur lors de la mise à jour du profil: $e');
     }
   }
 

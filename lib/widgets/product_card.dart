@@ -91,7 +91,7 @@ class ProductCard extends ConsumerWidget {
                             .textTheme
                             .bodySmall
                             ?.color
-                            ?.withOpacity(0.8)),
+                            ?.withValues(alpha: 0.8)),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),

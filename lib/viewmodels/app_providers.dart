@@ -5,8 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Export all providers from features
 export '../../viewmodels/auth_providers.dart';
 export '../../viewmodels/cart_providers.dart';
-export '../../viewmodels/product_providers.dart';
 export '../../viewmodels/order_providers.dart';
+export '../../viewmodels/product_providers.dart';
 
 const _kThemeModeKey = 'theme_mode';
 
@@ -29,7 +29,6 @@ String _stringifyThemeMode(ThemeMode mode) {
     case ThemeMode.dark:
       return 'dark';
     case ThemeMode.system:
-    default:
       return 'system';
   }
 }

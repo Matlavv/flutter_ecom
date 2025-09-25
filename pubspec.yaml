@@ -124,5 +124,5 @@ flutter:
   # see https://flutter.dev/to/font-from-package
 
   # Assets
-  assets:
-    - .env
+  # assets:
+  #   - .env

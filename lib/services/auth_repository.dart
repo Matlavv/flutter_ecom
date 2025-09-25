@@ -9,5 +9,9 @@ abstract class AuthRepository {
     String password,
     String displayName,
   );
+  Future<UserEntity> updateUserProfile({
+    String? displayName,
+    String? photoUrl,
+  });
   Future<void> signOut();
 }

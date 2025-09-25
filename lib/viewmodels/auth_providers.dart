@@ -2,13 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../services/auth_remote_datasource.dart';
-import '../services/auth_repository_impl.dart';
 import '../models/user_entity.dart';
+import '../services/auth_remote_datasource.dart';
 import '../services/auth_repository.dart';
+import '../services/auth_repository_impl.dart';
 import '../viewmodels/sign_in_usecase.dart';
 import '../viewmodels/sign_out_usecase.dart';
 import '../viewmodels/sign_up_usecase.dart';
+import '../viewmodels/update_profile_usecase.dart';
 
 // Data Sources
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
@@ -36,6 +37,10 @@ final signUpUseCaseProvider = Provider<SignUpUseCase>((ref) {
 
 final signOutUseCaseProvider = Provider<SignOutUseCase>((ref) {
   return SignOutUseCase(ref.watch(authRepositoryProvider));
+});
+
+final updateProfileUseCaseProvider = Provider<UpdateProfileUseCase>((ref) {
+  return UpdateProfileUseCase(ref.watch(authRepositoryProvider));
 });
 
 // State Providers

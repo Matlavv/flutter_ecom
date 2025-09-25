@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../models/user_entity.dart';
 import '../viewmodels/auth_providers.dart';
 
 class ProfilePage extends ConsumerWidget {
@@ -87,6 +88,20 @@ class ProfilePage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
 
+                  // Bouton de modification du profil
+                  Card(
+                    child: ListTile(
+                      leading: Icon(
+                        Icons.edit,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      title: const Text('Modifier le profil'),
+                      subtitle: const Text('Changer votre nom d\'affichage'),
+                      onTap: () => _showEditProfileDialog(context, ref, user),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
                   // Bouton de déconnexion
                   Card(
                     child: ListTile(
@@ -118,6 +133,84 @@ class ProfilePage extends ConsumerWidget {
       'décembre',
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
+  void _showEditProfileDialog(
+      BuildContext context, WidgetRef ref, UserEntity user) {
+    final displayNameController =
+        TextEditingController(text: user.displayName ?? '');
+    final photoUrlController = TextEditingController(text: user.photoUrl ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Modifier le profil'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: displayNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nom d\'affichage',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: photoUrlController,
+                decoration: const InputDecoration(
+                  labelText: 'URL de la photo de profil',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.image),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Annuler'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                await ref.read(updateProfileUseCaseProvider).call(
+                      displayName: displayNameController.text.trim().isEmpty
+                          ? null
+                          : displayNameController.text.trim(),
+                      photoUrl: photoUrlController.text.trim().isEmpty
+                          ? null
+                          : photoUrlController.text.trim(),
+                    );
+
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Profil mis à jour avec succès'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erreur: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text('Sauvegarder'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
