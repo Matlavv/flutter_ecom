@@ -122,7 +122,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await ref.read(signOutUseCaseProvider).call();
-              if (mounted) context.go('/login');
+              if (context.mounted) context.go('/login');
             },
             tooltip: 'Déconnexion',
           ),
@@ -327,7 +327,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                initialValue: selectedCategory,
+                value: selectedCategory,
                 decoration: const InputDecoration(
                   labelText: 'Catégorie',
                   border: OutlineInputBorder(),
@@ -371,14 +371,14 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
 
                   await ref.read(createProductUseCaseProvider).call(product);
 
-                  if (mounted) {
+                  if (context.mounted) {
                     Navigator.of(context).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Produit créé avec succès')),
                     );
                   }
                 } catch (e) {
-                  if (mounted) {
+                  if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Erreur: $e')),
                     );

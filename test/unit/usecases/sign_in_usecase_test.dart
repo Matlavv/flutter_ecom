@@ -33,6 +33,14 @@ class MockAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<UserEntity> updateUserProfile({
+    String? displayName,
+    String? photoUrl,
+  }) async {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<void> signOut() async {
     throw UnimplementedError();
   }
