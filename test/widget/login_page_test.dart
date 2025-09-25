@@ -28,13 +28,23 @@ void main() {
       WidgetTester tester,
     ) async {
       // Arrange
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+
       await tester.pumpWidget(
         ProviderScope(child: MaterialApp(home: const LoginPage())),
       );
+      await tester.pumpAndSettle();
 
-      // Act
-      await tester.tap(find.text('Pas de compte ? Créer un compte'));
-      await tester.pump();
+      // Act - Find the TextButton specifically
+      final signUpButton = find.byWidgetPredicate((widget) =>
+          widget is TextButton &&
+          widget.child is Text &&
+          (widget.child as Text).data == 'Pas de compte ? Créer un compte');
+
+      await tester.ensureVisible(signUpButton);
+      await tester.tap(signUpButton);
+      await tester.pumpAndSettle();
 
       // Assert
       expect(find.text('Créer votre compte'), findsOneWidget);
@@ -43,6 +53,9 @@ void main() {
         findsNWidgets(3),
       ); // Display name, email, password
       expect(find.text('Créer le compte'), findsOneWidget);
+
+      // Reset view size
+      addTearDown(tester.view.reset);
     });
 
     testWidgets('should validate email field', (WidgetTester tester) async {

@@ -21,7 +21,6 @@ env:
     PROJECT_ID: 'flutter-app-ecom'
 
 jobs:
-    # Job pour déterminer la stratégie de déploiement
     prepare:
         name: 📋 Préparation du déploiement
         runs-on: ubuntu-latest
@@ -71,8 +70,6 @@ jobs:
                   else
                     echo "should-deploy=true" >> $GITHUB_OUTPUT
                   fi
-
-    # Job de build Flutter
     build:
         name: 🔨 Build Flutter Web
         runs-on: ubuntu-latest
@@ -106,7 +103,6 @@ jobs:
                   path: build/web/
                   retention-days: 1
 
-    # Job de déploiement Blue-Green
     deploy:
         name: 🚀 Déploiement Blue-Green
         runs-on: ubuntu-latest
@@ -207,7 +203,6 @@ jobs:
                   echo "- **Blue Channel:** https://$PROJECT_ID--blue-$(echo $PROJECT_ID | tr '[:upper:]' '[:lower:]').web.app" >> $GITHUB_STEP_SUMMARY
                   echo "- **Green Channel:** https://$PROJECT_ID--green-$(echo $PROJECT_ID | tr '[:upper:]' '[:lower:]').web.app" >> $GITHUB_STEP_SUMMARY
 
-    # Job de rollback (si nécessaire)
     rollback:
         name: 🔙 Rollback
         runs-on: ubuntu-latest
@@ -245,7 +240,6 @@ jobs:
 
                   echo "✅ Rollback réussi vers $TARGET_CHANNEL"
 
-    # Job de status (optionnel)
     status:
         name: 📊 Status des channels
         runs-on: ubuntu-latest
