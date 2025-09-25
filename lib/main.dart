@@ -11,8 +11,14 @@ import 'viewmodels/app_providers.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Charger les variables d'environnement
-  await dotenv.load(fileName: ".env");
+  // Charger les variables d'environnement (optionnel)
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    // Fichier .env non trouvé, utiliser les valeurs par défaut
+    print(
+        'Fichier .env non trouvé, utilisation des valeurs par défaut Firebase');
+  }
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const ProviderScope(child: MyApp()));

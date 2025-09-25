@@ -141,7 +141,7 @@ jobs:
               run: flutter pub get
 
             - name: 🌐 Build web (optimized)
-              run: flutter build web --release --web-renderer canvaskit --dart-define=FLUTTER_WEB_USE_SKIA=true
+              run: flutter build web --release
 
             - name: 🚀 Deploy to Vercel
               uses: amondnet/vercel-action@v25

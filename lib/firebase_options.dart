@@ -1,7 +1,6 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
@@ -29,52 +28,49 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static FirebaseOptions get web => FirebaseOptions(
-        apiKey: dotenv.env['FIREBASE_WEB_API_KEY'] ?? '',
-        appId: dotenv.env['FIREBASE_WEB_APP_ID'] ?? '',
-        messagingSenderId: dotenv.env['FIREBASE_WEB_MESSAGING_SENDER_ID'] ?? '',
-        projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? '',
-        authDomain: dotenv.env['FIREBASE_WEB_AUTH_DOMAIN'] ?? '',
-        storageBucket: dotenv.env['FIREBASE_WEB_STORAGE_BUCKET'] ?? '',
-        measurementId: dotenv.env['FIREBASE_WEB_MEASUREMENT_ID'] ?? '',
-      );
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyDeyPy6sZWeiDfsWfCRTT62xSOit4YcyMk',
+    appId: '1:330662716424:web:your_web_app_id',
+    messagingSenderId: '330662716424',
+    projectId: 'flutter-app-ecom',
+    authDomain: 'flutter-app-ecom.firebaseapp.com',
+    storageBucket: 'flutter-app-ecom.firebasestorage.app',
+    measurementId: 'G-MEASUREMENT_ID',
+  );
 
-  static FirebaseOptions get android => FirebaseOptions(
-        apiKey: dotenv.env['FIREBASE_ANDROID_API_KEY'] ?? '',
-        appId: dotenv.env['FIREBASE_ANDROID_APP_ID'] ?? '',
-        messagingSenderId:
-            dotenv.env['FIREBASE_ANDROID_MESSAGING_SENDER_ID'] ?? '',
-        projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? '',
-        storageBucket: dotenv.env['FIREBASE_ANDROID_STORAGE_BUCKET'] ?? '',
-      );
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyDeyPy6sZWeiDfsWfCRTT62xSOit4YcyMk',
+    appId: '1:330662716424:android:3c69d2d73c53e0f36dddbd',
+    messagingSenderId: '330662716424',
+    projectId: 'flutter-app-ecom',
+    storageBucket: 'flutter-app-ecom.firebasestorage.app',
+  );
 
-  static FirebaseOptions get ios => FirebaseOptions(
-        apiKey: dotenv.env['FIREBASE_IOS_API_KEY'] ?? '',
-        appId: dotenv.env['FIREBASE_IOS_APP_ID'] ?? '',
-        messagingSenderId: dotenv.env['FIREBASE_IOS_MESSAGING_SENDER_ID'] ?? '',
-        projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? '',
-        storageBucket: dotenv.env['FIREBASE_IOS_STORAGE_BUCKET'] ?? '',
-        iosBundleId: dotenv.env['FIREBASE_IOS_BUNDLE_ID'] ?? '',
-      );
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyDeyPy6sZWeiDfsWfCRTT62xSOit4YcyMk',
+    appId: '1:330662716424:ios:your_ios_app_id',
+    messagingSenderId: '330662716424',
+    projectId: 'flutter-app-ecom',
+    storageBucket: 'flutter-app-ecom.firebasestorage.app',
+    iosBundleId: 'com.matlav.flutter_ecom',
+  );
 
-  static FirebaseOptions get macos => FirebaseOptions(
-        apiKey: dotenv.env['FIREBASE_MACOS_API_KEY'] ?? '',
-        appId: dotenv.env['FIREBASE_MACOS_APP_ID'] ?? '',
-        messagingSenderId:
-            dotenv.env['FIREBASE_MACOS_MESSAGING_SENDER_ID'] ?? '',
-        projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? '',
-        storageBucket: dotenv.env['FIREBASE_MACOS_STORAGE_BUCKET'] ?? '',
-        iosBundleId: dotenv.env['FIREBASE_MACOS_BUNDLE_ID'] ?? '',
-      );
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyDeyPy6sZWeiDfsWfCRTT62xSOit4YcyMk',
+    appId: '1:330662716424:macos:your_macos_app_id',
+    messagingSenderId: '330662716424',
+    projectId: 'flutter-app-ecom',
+    storageBucket: 'flutter-app-ecom.firebasestorage.app',
+    iosBundleId: 'com.matlav.flutter_ecom',
+  );
 
-  static FirebaseOptions get windows => FirebaseOptions(
-        apiKey: dotenv.env['FIREBASE_WINDOWS_API_KEY'] ?? '',
-        appId: dotenv.env['FIREBASE_WINDOWS_APP_ID'] ?? '',
-        messagingSenderId:
-            dotenv.env['FIREBASE_WINDOWS_MESSAGING_SENDER_ID'] ?? '',
-        projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? '',
-        authDomain: dotenv.env['FIREBASE_WINDOWS_AUTH_DOMAIN'] ?? '',
-        storageBucket: dotenv.env['FIREBASE_WINDOWS_STORAGE_BUCKET'] ?? '',
-        measurementId: dotenv.env['FIREBASE_WINDOWS_MEASUREMENT_ID'] ?? '',
-      );
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyDeyPy6sZWeiDfsWfCRTT62xSOit4YcyMk',
+    appId: '1:330662716424:windows:your_windows_app_id',
+    messagingSenderId: '330662716424',
+    projectId: 'flutter-app-ecom',
+    authDomain: 'flutter-app-ecom.firebaseapp.com',
+    storageBucket: 'flutter-app-ecom.firebasestorage.app',
+    measurementId: 'G-MEASUREMENT_ID',
+  );
 }
