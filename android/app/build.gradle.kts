@@ -55,16 +55,12 @@ android {
     buildTypes {
         release {
             // Configuration optimisée pour la production
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            isMinifyEnabled = false  // Temporairement désactivé pour résoudre les erreurs R8
+            isShrinkResources = false
+            // proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             
-            // Utiliser la signature de release si disponible, sinon debug
-            signingConfig = if (keystorePropertiesFile.exists()) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            // Utiliser la signature debug pour les tests locaux
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 }

@@ -14,6 +14,10 @@
 -dontwarn com.google.firebase.**
 -dontwarn com.google.android.gms.**
 
+# Google Play Core (pour les builds release)
+-keep class com.google.android.play.core.** { *; }
+-dontwarn com.google.android.play.core.**
+
 # Riverpod
 -keep class com.riverpod.** { *; }
 -keep class **$StateNotifier { *; }
