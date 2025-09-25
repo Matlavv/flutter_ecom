@@ -1,0 +1,280 @@
+name: 🔄 Firebase Blue-Green Deployment
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+        inputs:
+            action:
+                description: 'Action à effectuer'
+                required: true
+                default: 'deploy'
+                type: choice
+                options:
+                    - deploy
+                    - rollback-blue
+                    - rollback-green
+                    - status
+
+env:
+    FLUTTER_VERSION: '3.24.5'
+    PROJECT_ID: 'flutter-app-ecom'
+
+jobs:
+    # Job pour déterminer la stratégie de déploiement
+    prepare:
+        name: 📋 Préparation du déploiement
+        runs-on: ubuntu-latest
+        outputs:
+            active-channel: ${{ steps.channels.outputs.active }}
+            inactive-channel: ${{ steps.channels.outputs.inactive }}
+            should-deploy: ${{ steps.decision.outputs.should-deploy }}
+        steps:
+            - name: 📥 Checkout code
+              uses: actions/checkout@v4
+
+            - name: 🔧 Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+            - name: 🔥 Setup Firebase CLI
+              run: |
+                  npm install -g firebase-tools
+                  echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > $HOME/firebase-service-account.json
+                  export GOOGLE_APPLICATION_CREDENTIALS=$HOME/firebase-service-account.json
+                  firebase --version
+
+            - name: 🔍 Déterminer les channels actifs
+              id: channels
+              run: |
+                  # Logique simplifiée pour déterminer le channel actif
+                  # En production, vous pourriez vouloir une logique plus sophistiquée
+                  TIMESTAMP=$(date +%s)
+                  if [ $((TIMESTAMP % 2)) -eq 0 ]; then
+                    echo "active=blue" >> $GITHUB_OUTPUT
+                    echo "inactive=green" >> $GITHUB_OUTPUT
+                  else
+                    echo "active=green" >> $GITHUB_OUTPUT
+                    echo "inactive=blue" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: 🎯 Décision de déploiement
+              id: decision
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                    if [ "${{ github.event.inputs.action }}" = "deploy" ]; then
+                      echo "should-deploy=true" >> $GITHUB_OUTPUT
+                    else
+                      echo "should-deploy=false" >> $GITHUB_OUTPUT
+                    fi
+                  else
+                    echo "should-deploy=true" >> $GITHUB_OUTPUT
+                  fi
+
+    # Job de build Flutter
+    build:
+        name: 🔨 Build Flutter Web
+        runs-on: ubuntu-latest
+        needs: prepare
+        if: needs.prepare.outputs.should-deploy == 'true'
+        steps:
+            - name: 📥 Checkout code
+              uses: actions/checkout@v4
+
+            - name: 🐦 Setup Flutter
+              uses: subosito/flutter-action@v2
+              with:
+                  flutter-version: ${{ env.FLUTTER_VERSION }}
+                  channel: 'stable'
+                  cache: true
+
+            - name: 📦 Get dependencies
+              run: flutter pub get
+
+            - name: 🧪 Run tests
+              run: flutter test
+
+            - name: 🔨 Build web
+              run: |
+                  flutter build web --release --web-renderer html
+
+            - name: 📤 Upload build artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: web-build
+                  path: build/web/
+                  retention-days: 1
+
+    # Job de déploiement Blue-Green
+    deploy:
+        name: 🚀 Déploiement Blue-Green
+        runs-on: ubuntu-latest
+        needs: [prepare, build]
+        if: needs.prepare.outputs.should-deploy == 'true'
+        environment: production
+        steps:
+            - name: 📥 Checkout code
+              uses: actions/checkout@v4
+
+            - name: 📤 Download build artifacts
+              uses: actions/download-artifact@v4
+              with:
+                  name: web-build
+                  path: build/web/
+
+            - name: 🔧 Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+            - name: 🔥 Setup Firebase CLI
+              run: |
+                  npm install -g firebase-tools
+                  echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > $HOME/firebase-service-account.json
+                  export GOOGLE_APPLICATION_CREDENTIALS=$HOME/firebase-service-account.json
+
+            - name: 🎯 Déploiement sur channel inactif
+              env:
+                  GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+              run: |
+                  echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > $GOOGLE_APPLICATION_CREDENTIALS
+
+                  INACTIVE_CHANNEL="${{ needs.prepare.outputs.inactive-channel }}"
+                  echo "🚀 Déploiement sur le channel: $INACTIVE_CHANNEL"
+
+                  firebase deploy --only hosting:$INACTIVE_CHANNEL --project $PROJECT_ID
+
+                  # Stocker l'URL du channel pour les tests
+                  CHANNEL_URL="https://$PROJECT_ID--$INACTIVE_CHANNEL-$(echo $PROJECT_ID | tr '[:upper:]' '[:lower:]').web.app"
+                  echo "CHANNEL_URL=$CHANNEL_URL" >> $GITHUB_ENV
+                  echo "INACTIVE_CHANNEL=$INACTIVE_CHANNEL" >> $GITHUB_ENV
+
+            - name: 🧪 Smoke Tests
+              run: |
+                  echo "🧪 Exécution des smoke tests sur: $CHANNEL_URL"
+
+                  # Test 1: Vérifier que l'application se charge
+                  STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$CHANNEL_URL" || echo "000")
+                  if [ "$STATUS_CODE" != "200" ]; then
+                    echo "❌ Smoke test échoué: Status code $STATUS_CODE"
+                    exit 1
+                  fi
+                  echo "✅ Test 1 réussi: Application accessible (200)"
+
+                  # Test 2: Vérifier le contenu Flutter
+                  CONTENT=$(curl -s "$CHANNEL_URL" || echo "")
+                  if [[ ! "$CONTENT" == *"flutter"* ]]; then
+                    echo "❌ Smoke test échoué: Contenu Flutter non trouvé"
+                    exit 1
+                  fi
+                  echo "✅ Test 2 réussi: Contenu Flutter détecté"
+
+                  # Test 3: Vérifier les assets critiques
+                  MAIN_JS_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$CHANNEL_URL/main.dart.js" || echo "000")
+                  if [ "$MAIN_JS_STATUS" = "200" ]; then
+                    echo "✅ Test 3 réussi: Assets JavaScript accessibles"
+                  else
+                    echo "⚠️ Attention: main.dart.js non accessible (status: $MAIN_JS_STATUS)"
+                  fi
+
+                  echo "🎉 Tous les smoke tests sont réussis!"
+
+            - name: 🔄 Promotion vers Live
+              env:
+                  GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+              run: |
+                  echo "🔄 Promotion du channel $INACTIVE_CHANNEL vers live"
+
+                  firebase hosting:clone $PROJECT_ID:$INACTIVE_CHANNEL $PROJECT_ID:live --project $PROJECT_ID
+
+                  echo "✅ Promotion réussie!"
+                  echo "🌐 URL Live: https://$PROJECT_ID.web.app"
+                  echo "🔵 URL Blue: https://$PROJECT_ID--blue-$(echo $PROJECT_ID | tr '[:upper:]' '[:lower:]').web.app"
+                  echo "🟢 URL Green: https://$PROJECT_ID--green-$(echo $PROJECT_ID | tr '[:upper:]' '[:lower:]').web.app"
+
+            - name: 📊 Résumé du déploiement
+              run: |
+                  echo "## 🎉 Déploiement Blue-Green réussi!" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "### 📋 Détails:" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Channel déployé:** $INACTIVE_CHANNEL" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Status:** ✅ Succès" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Smoke tests:** ✅ Réussis" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "### 🔗 URLs:" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Production:** https://$PROJECT_ID.web.app" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Blue Channel:** https://$PROJECT_ID--blue-$(echo $PROJECT_ID | tr '[:upper:]' '[:lower:]').web.app" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Green Channel:** https://$PROJECT_ID--green-$(echo $PROJECT_ID | tr '[:upper:]' '[:lower:]').web.app" >> $GITHUB_STEP_SUMMARY
+
+    # Job de rollback (si nécessaire)
+    rollback:
+        name: 🔙 Rollback
+        runs-on: ubuntu-latest
+        needs: prepare
+        if: github.event_name == 'workflow_dispatch' && (github.event.inputs.action == 'rollback-blue' || github.event.inputs.action == 'rollback-green')
+        environment: production
+        steps:
+            - name: 📥 Checkout code
+              uses: actions/checkout@v4
+
+            - name: 🔧 Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+            - name: 🔥 Setup Firebase CLI
+              run: |
+                  npm install -g firebase-tools
+                  echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > $HOME/firebase-service-account.json
+
+            - name: 🔙 Exécuter le rollback
+              env:
+                  GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+              run: |
+                  echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > $GOOGLE_APPLICATION_CREDENTIALS
+
+                  if [ "${{ github.event.inputs.action }}" = "rollback-blue" ]; then
+                    TARGET_CHANNEL="blue"
+                  else
+                    TARGET_CHANNEL="green"
+                  fi
+
+                  echo "🔙 Rollback vers le channel: $TARGET_CHANNEL"
+                  firebase hosting:clone $PROJECT_ID:$TARGET_CHANNEL $PROJECT_ID:live --project $PROJECT_ID
+
+                  echo "✅ Rollback réussi vers $TARGET_CHANNEL"
+
+    # Job de status (optionnel)
+    status:
+        name: 📊 Status des channels
+        runs-on: ubuntu-latest
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'status'
+        steps:
+            - name: 📥 Checkout code
+              uses: actions/checkout@v4
+
+            - name: 🔧 Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+
+            - name: 🔥 Setup Firebase CLI
+              run: |
+                  npm install -g firebase-tools
+                  echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > $HOME/firebase-service-account.json
+
+            - name: 📊 Afficher le status
+              env:
+                  GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
+              run: |
+                  echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > $GOOGLE_APPLICATION_CREDENTIALS
+
+                  echo "📊 Status des channels Firebase Hosting:"
+                  firebase hosting:channel:list --project $PROJECT_ID
+
+                  echo ""
+                  echo "🔗 URLs disponibles:"
+                  echo "- Production: https://$PROJECT_ID.web.app"
+                  echo "- Blue: https://$PROJECT_ID--blue-$(echo $PROJECT_ID | tr '[:upper:]' '[:lower:]').web.app"
+                  echo "- Green: https://$PROJECT_ID--green-$(echo $PROJECT_ID | tr '[:upper:]' '[:lower:]').web.app"
