@@ -1,0 +1,22 @@
+{
+    "projects": {
+        "default": "flutter-app-ecom",
+        "production": "flutter-app-ecom"
+    },
+    "targets": {
+        "flutter-app-ecom": {
+            "hosting": {
+                "live": [
+                    "flutter-app-ecom"
+                ],
+                "blue": [
+                    "flutter-app-ecom"
+                ],
+                "green": [
+                    "flutter-app-ecom"
+                ]
+            }
+        }
+    },
+    "etags": {}
+}
