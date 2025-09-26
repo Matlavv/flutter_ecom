@@ -270,6 +270,69 @@ match /orders/{orderId} {
 -   **Outils** : Flutter Test + Coverage
 -   **Structure** : Tests organisés par couche (domain, data, presentation)
 
+### 🚀 Tests de Charge (JMeter)
+
+#### Configuration et Exécution
+
+Les tests de charge utilisent **Apache JMeter** pour simuler des utilisateurs réels et mesurer les performances de l'application web.
+
+```bash
+# Installation JMeter (macOS)
+brew install jmeter
+
+# Exécution des tests par défaut (10 utilisateurs, 5 minutes)
+./load-tests/run-load-test.sh
+
+# Test personnalisé (50 utilisateurs, 10 minutes, production)
+./load-tests/run-load-test.sh production 50 600
+```
+
+#### Scénarios Testés
+
+-   **🏠 Page d'accueil** - Point d'entrée de l'application
+-   **📦 Catalogue de produits** - Navigation dans les produits
+-   **🔍 Détail produit** - Consultation d'un produit spécifique
+-   **🛒 Panier** - Gestion du panier d'achat
+-   **🔐 Page de connexion** - Authentification utilisateur
+
+#### Environnements de Test
+
+| Environnement | URL                                              | Usage                        |
+| ------------- | ------------------------------------------------ | ---------------------------- |
+| `production`  | https://flutter-app-ecom.web.app                 | Tests sur la production      |
+| `blue`        | https://flutter-app-ecom--blue-loai3kdo.web.app  | Tests sur le channel Blue    |
+| `green`       | https://flutter-app-ecom--green-hexbm263.web.app | Tests sur le channel Green   |
+| `local`       | http://localhost:8000                            | Tests en développement local |
+
+#### Métriques Surveillées
+
+-   **⏱️ Temps de réponse** (moyen, médian, 90e/95e percentile)
+-   **📊 Débit** (requêtes/seconde)
+-   **❌ Taux d'erreur** (pourcentage d'échecs)
+-   **🔗 Temps de connexion** et latence
+
+#### Objectifs de Performance
+
+-   **Temps de réponse moyen** : < 2 secondes
+-   **95e percentile** : < 5 secondes
+-   **Taux d'erreur** : < 1%
+-   **Débit minimum** : 10 req/sec pour 10 utilisateurs
+
+#### Rapports et Résultats
+
+Les tests génèrent automatiquement :
+
+-   **📊 Rapport HTML** interactif avec graphiques
+-   **📈 Métriques détaillées** par endpoint
+-   **📋 Résumé de performance** en temps réel
+
+```bash
+# Consulter les rapports générés
+open load-tests/results/html-report-*/index.html
+```
+
+> 📚 **Documentation complète** : Voir `load-tests/README.md` pour les détails d'utilisation et configuration avancée.
+
 ## 🚀 Déploiement & CI/CD
 
 ### 🔄 Stratégie Blue-Green avec Firebase Hosting

@@ -140,7 +140,5 @@ jobs:
                   echo "- **Web Build**: ${{ needs.build-web.result }}" >> $GITHUB_STEP_SUMMARY
                   echo "- **Android Build**: ${{ needs.build-android.result }}" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  else
-                      echo "⚠️ **Web build disponible en artifact**" >> $GITHUB_STEP_SUMMARY
                   fi
                   echo "📱 **Android APK/AAB disponibles en artifacts**" >> $GITHUB_STEP_SUMMARY

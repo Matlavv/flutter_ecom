@@ -16,12 +16,11 @@ void main() async {
     await dotenv.load(fileName: ".env");
   } catch (e) {
     // Fichier .env non trouvé, utiliser les valeurs par défaut
-    print(
-        'Fichier .env non trouvé, utilisation des valeurs par défaut Firebase');
-  }
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const ProviderScope(child: MyApp()));
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+    runApp(const ProviderScope(child: MyApp()));
+  }
 }
 
 class MyApp extends ConsumerWidget {
