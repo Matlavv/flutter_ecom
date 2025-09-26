@@ -113,7 +113,6 @@ jobs:
 
             - name: 🤖 Build Android (Debug signing)
               run: |
-                  flutter build apk --release --target-platform android-arm64
                   flutter build appbundle --release --target-platform android-arm64
 
             - name: 📱 Upload Android artifacts
@@ -121,7 +120,6 @@ jobs:
               with:
                   name: android-build-${{ github.sha }}
                   path: |
-                      build/app/outputs/flutter-apk/
                       build/app/outputs/bundle/release/
                   retention-days: 7
 
@@ -140,5 +138,4 @@ jobs:
                   echo "- **Web Build**: ${{ needs.build-web.result }}" >> $GITHUB_STEP_SUMMARY
                   echo "- **Android Build**: ${{ needs.build-android.result }}" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
-                  fi
-                  echo "📱 **Android APK/AAB disponibles en artifacts**" >> $GITHUB_STEP_SUMMARY
+                  echo "📱 **Android AAB disponibles en artifacts**" >> $GITHUB_STEP_SUMMARY
