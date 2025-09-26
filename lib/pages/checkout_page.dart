@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../models/cart_item_entity.dart';
+import '../services/stripe_mock_service.dart';
 import '../viewmodels/auth_providers.dart';
 import '../viewmodels/cart_providers.dart';
 import '../viewmodels/order_providers.dart';
+import '../widgets/stripe_payment_widget.dart';
 
 class CheckoutPage extends ConsumerStatefulWidget {
   const CheckoutPage({super.key});
@@ -17,17 +19,12 @@ class CheckoutPage extends ConsumerStatefulWidget {
 class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   final _formKey = GlobalKey<FormState>();
   final _addressController = TextEditingController();
-  final _cardNumberController = TextEditingController();
-  final _expiryController = TextEditingController();
-  final _cvvController = TextEditingController();
   bool _isProcessing = false;
+  bool _showStripeWidget = false;
 
   @override
   void dispose() {
     _addressController.dispose();
-    _cardNumberController.dispose();
-    _expiryController.dispose();
-    _cvvController.dispose();
     super.dispose();
   }
 
@@ -40,73 +37,145 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Finaliser la commande'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        elevation: 0,
       ),
-      body: cartItemsAsync.when(
-        data: (cartItems) {
-          if (cartItems.isEmpty) {
-            return const Center(
+      body: Stack(
+        children: [
+          cartItemsAsync.when(
+            data: (cartItems) {
+              if (cartItems.isEmpty) {
+                return const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.shopping_cart_outlined,
+                        size: 100,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(height: 20),
+                      Text(
+                        'Votre panier est vide',
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'Ajoutez des produits avant de passer commande',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWideScreen = constraints.maxWidth > 800;
+
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.all(isWideScreen ? 32 : 16),
+                    child: Form(
+                      key: _formKey,
+                      child: isWideScreen
+                          ? _buildWideLayout(
+                              cartItems, cartTotalAsync, currentUser)
+                          : _buildNarrowLayout(
+                              cartItems, cartTotalAsync, currentUser),
+                    ),
+                  );
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.shopping_cart_outlined,
-                    size: 100,
-                    color: Colors.grey,
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    'Votre panier est vide',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    'Ajoutez des produits avant de passer commande',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Résumé de la commande
-                  _buildOrderSummary(cartItems, cartTotalAsync),
-                  const SizedBox(height: 24),
-
-                  // Adresse de livraison
-                  _buildAddressSection(),
-                  const SizedBox(height: 24),
-
-                  // Informations de paiement
-                  _buildPaymentSection(),
-                  const SizedBox(height: 24),
-
-                  // Bouton de commande
-                  _buildOrderButton(cartItems, cartTotalAsync, currentUser),
+                  const Icon(Icons.error, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text('Erreur: $error'),
                 ],
               ),
             ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
+          ),
+          // Overlay Stripe
+          if (_showStripeWidget)
+            Container(
+              color: Colors.black.withValues(alpha: 0.5),
+              child: Center(
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 500),
+                  margin: const EdgeInsets.all(16),
+                  child: cartTotalAsync.when(
+                    data: (total) => StripePaymentWidget(
+                      amount: total,
+                      onPaymentResult: _handleStripePayment,
+                      onCancel: () => setState(() => _showStripeWidget = false),
+                    ),
+                    loading: () => const CircularProgressIndicator(),
+                    error: (_, __) => const Text('Erreur de calcul'),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWideLayout(
+    List<CartItemEntity> cartItems,
+    AsyncValue<double> cartTotalAsync,
+    user,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Colonne gauche - Formulaire
+        Expanded(
+          flex: 2,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.error, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('Erreur: $error'),
+              _buildAddressSection(),
+              const SizedBox(height: 24),
+              _buildPaymentMethodSelection(),
             ],
           ),
         ),
-      ),
+        const SizedBox(width: 32),
+        // Colonne droite - Résumé
+        Expanded(
+          flex: 1,
+          child: Column(
+            children: [
+              _buildOrderSummary(cartItems, cartTotalAsync),
+              const SizedBox(height: 24),
+              _buildOrderButton(cartItems, cartTotalAsync, user),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNarrowLayout(
+    List<CartItemEntity> cartItems,
+    AsyncValue<double> cartTotalAsync,
+    user,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildOrderSummary(cartItems, cartTotalAsync),
+        const SizedBox(height: 24),
+        _buildAddressSection(),
+        const SizedBox(height: 24),
+        _buildPaymentMethodSelection(),
+        const SizedBox(height: 24),
+        _buildOrderButton(cartItems, cartTotalAsync, user),
+      ],
     );
   }
 
@@ -200,76 +269,56 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     );
   }
 
-  Widget _buildPaymentSection() {
+  Widget _buildPaymentMethodSelection() {
     return Card(
+      elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Informations de paiement',
+              'Méthode de paiement',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _cardNumberController,
-              decoration: const InputDecoration(
-                labelText: 'Numéro de carte',
-                border: OutlineInputBorder(),
-                hintText: '1234 5678 9012 3456',
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
+                borderRadius: BorderRadius.circular(12),
               ),
-              keyboardType: TextInputType.number,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Veuillez entrer le numéro de carte';
-                }
-                if (value.replaceAll(' ', '').length < 16) {
-                  return 'Numéro de carte invalide';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _expiryController,
-                    decoration: const InputDecoration(
-                      labelText: 'Date d\'expiration',
-                      border: OutlineInputBorder(),
-                      hintText: 'MM/AA',
-                    ),
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Date requise';
-                      }
-                      return null;
-                    },
+              child: ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF635BFF).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.credit_card,
+                    color: Color(0xFF635BFF),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: TextFormField(
-                    controller: _cvvController,
-                    decoration: const InputDecoration(
-                      labelText: 'CVV',
-                      border: OutlineInputBorder(),
-                      hintText: '123',
-                    ),
-                    keyboardType: TextInputType.number,
-                    obscureText: true,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'CVV requis';
-                      }
-                      if (value.length < 3) {
-                        return 'CVV invalide';
-                      }
-                      return null;
-                    },
+                title: const Text(
+                  'Paiement sécurisé avec Stripe',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: const Text('Visa, Mastercard, American Express'),
+                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                onTap: () => setState(() => _showStripeWidget = true),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(Icons.security, color: Colors.green.shade600, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  'Paiement 100% sécurisé et crypté',
+                  style: TextStyle(
+                    color: Colors.green.shade600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -287,57 +336,81 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   ) {
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: 56,
       child: ElevatedButton(
         onPressed: _isProcessing
             ? null
-            : () => _processOrder(cartItems, cartTotalAsync, user),
+            : () => setState(() => _showStripeWidget = true),
+        style: ElevatedButton.styleFrom(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
         child: _isProcessing
             ? const CircularProgressIndicator(color: Colors.white)
-            : const Text(
-                'Confirmer la commande',
-                style: TextStyle(fontSize: 18),
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.payment, size: 20),
+                  const SizedBox(width: 8),
+                  cartTotalAsync.when(
+                    data: (total) => Text(
+                      'Payer ${total.toStringAsFixed(2)} €',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w600),
+                    ),
+                    loading: () => const Text('Calcul...'),
+                    error: (_, __) => const Text('Erreur'),
+                  ),
+                ],
               ),
       ),
     );
   }
 
-  Future<void> _processOrder(
-    List<CartItemEntity> cartItems,
-    AsyncValue<double> cartTotalAsync,
-    user,
-  ) async {
+  void _handleStripePayment(StripePaymentResult result) async {
+    setState(() => _showStripeWidget = false);
+
+    if (!result.success) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Paiement échoué: ${result.error}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Procéder à la création de la commande
+    await _createOrder(result.transactionId!);
+  }
+
+  Future<void> _createOrder(String transactionId) async {
     if (!_formKey.currentState!.validate()) return;
-    if (user == null) return;
+
+    final currentUser = ref.read(currentUserProvider);
+    final cartItemsAsync = ref.read(cartItemsProvider);
+
+    if (currentUser == null) return;
 
     setState(() => _isProcessing = true);
 
     try {
-      // Simuler le paiement
-      final total = cartTotalAsync.when(
-        data: (value) => value,
-        loading: () => 0.0,
-        error: (_, __) => 0.0,
+      final cartItems = cartItemsAsync.when(
+        data: (items) => items,
+        loading: () => <CartItemEntity>[],
+        error: (_, __) => <CartItemEntity>[],
       );
 
-      final paymentSuccess =
-          await ref.read(orderRepositoryProvider).simulatePayment(
-                cardNumber: _cardNumberController.text,
-                expiryDate: _expiryController.text,
-                cvv: _cvvController.text,
-                amount: total,
-              );
-
-      if (!paymentSuccess) {
-        throw Exception('Paiement refusé. Veuillez vérifier vos informations.');
-      }
-
-      // Créer la commande
+      // Créer la commande avec l'ID de transaction Stripe
       final orderId = await ref.read(createOrderUseCaseProvider).call(
-            userId: user.id,
+            userId: currentUser.id,
             items: cartItems,
             shippingAddress: _addressController.text,
-            paymentMethod: 'Carte bancaire',
+            paymentMethod: 'Stripe - $transactionId',
           );
 
       // Vider le panier
@@ -348,8 +421,9 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Commande #$orderId créée avec succès !'),
+            content: Text('✅ Commande #$orderId créée avec succès !'),
             backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
           ),
         );
         context.go('/orders');
@@ -357,7 +431,10 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Erreur lors de la création de la commande: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {

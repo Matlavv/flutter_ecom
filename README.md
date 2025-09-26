@@ -4,17 +4,123 @@
 
 Une application e-commerce complète développée avec Flutter, Firebase et une architecture MVVM/Clean, avec CI/CD automatisée et déploiement Blue-Green.
 
-## 🌐 Déploiements
+## 📋 Table des Matières
 
-### Production
+-   [📱 Application sur Android](#-application-sur-android)
+-   [🌐 Déploiements & Infrastructure](#-déploiements--infrastructure)
+-   [🤖 CI/CD Pipeline](#-cicd-pipeline)
+-   [📱 Déploiement Play Store](#-déploiement-play-store)
+-   [🚀 Démarrage rapide](#-démarrage-rapide)
+-   [🛍️ Fonctionnalités](#️-fonctionnalités)
+-   [🏗️ Architecture](#️-architecture)
+-   [🧪 Tests](#-tests)
+-   [🚀 Déploiement & CI/CD](#-déploiement--cicd)
+-   [📊 Fonctionnalités Techniques](#-fonctionnalités-techniques)
 
--   **Firebase Hosting** : https://flutter-app-ecom.web.app
--   **Vercel (Legacy)** : https://web-six-flax.vercel.app
+## 📱 Application sur Android
 
-### Channels de déploiement (Blue-Green)
+<div align="center">
+  <img src="readme/images/mobile-app.jpg" alt="Application Mobile Flutter E-Commerce" width="300"/>
+  <p><em>Application mobile Flutter en phase de test sur le Play Store</em></p>
+</div>
 
--   **Blue Channel** : https://flutter-app-ecom--blue-loai3kdo.web.app
--   **Green Channel** : https://flutter-app-ecom--green-hexbm263.web.app
+## 🌐 Déploiements & Infrastructure
+
+### 🚀 Production
+
+<div align="center">
+  <img src="readme/images/firebase_hosting.png" alt="Firebase Hosting Dashboard" width="600"/>
+  <p><em>Dashboard Firebase Hosting avec métriques de perfomances et déploiement automatique</em></p>
+</div>
+
+-   **🔥 Firebase Hosting** : https://flutter-app-ecom.web.app
+-   **⚡ Vercel (Legacy)** : https://web-six-flax.vercel.app
+
+<div align="center">
+  <img src="readme/images/vercel-screen.png" alt="Vercel Deployment Dashboard" width="600"/>
+  <p><em>Dashboard Vercel</em></p>
+</div>
+
+### 🔄 Channels de déploiement (Blue-Green)
+
+-   **🔵 Blue Channel** : https://flutter-app-ecom--blue-loai3kdo.web.app
+-   **🟢 Green Channel** : https://flutter-app-ecom--green-hexbm263.web.app
+
+## 🤖 CI/CD Pipeline
+
+<div align="center">
+  <img src="readme/images/ci-github.png" alt="GitHub Actions CI/CD Pipeline" width="700"/>
+  <p><em>Pipeline CI/CD automatisé avec GitHub Actions - Workflow complet de la qualité au déploiement</em></p>
+</div>
+
+### 🔄 Workflow Automatisé
+
+Notre pipeline CI/CD inclut :
+
+| Étape                  | Description                                  | Outils                      |
+| ---------------------- | -------------------------------------------- | --------------------------- |
+| 🔍 **Quality Check**   | Tests unitaires, analyse statique, formatage | Flutter Test, Dart Analyzer |
+| 🌐 **Build Web**       | Compilation optimisée pour le web            | Flutter Web, CanvasKit      |
+| 🤖 **Build Android**   | Génération AAB pour Play Store               | Flutter Android, Gradle     |
+| 🚀 **Deploy Firebase** | Déploiement Blue-Green automatique           | Firebase Hosting, Channels  |
+
+### 📊 Métriques de Performance
+
+-   ⏱️ **Temps de build** : ~4-6 minutes
+-   🧪 **Couverture de tests** : >50%
+-   🚀 **Déploiement** : <2 minutes
+-   📈 **Uptime** : 99.9%
+
+## 📱 Déploiement Play Store
+
+<div align="center">
+  <img src="readme/images/play-store-deployment.png" alt="Google Play Store Deployment" width="600"/>
+  <p><em>Configuration de déploiement sur Google Play Store</em></p>
+</div>
+
+L'application est prête pour la distribution sur :
+
+-   🤖 **Google Play Store** (AAB optimisé)
+-   🍎 **Apple App Store** (iOS ready)
+-   🌐 **PWA** (Installation directe depuis le navigateur)
+
+## 🛠️ Technologies & Stack
+
+<div align="center">
+
+![Flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
+![Dart](https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![Google Cloud](https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
+![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+![PWA](https://img.shields.io/badge/PWA-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)
+
+</div>
+
+### 🏗️ Architecture Technique
+
+-   **🎯 Frontend** : Flutter 3.35.4 + Material Design 3
+-   **🔥 Backend** : Firebase (Auth, Firestore, Storage, Hosting)
+-   **🔄 State Management** : Riverpod + Clean Architecture
+-   **🚀 CI/CD** : GitHub Actions + Blue-Green Deployment
+-   **📊 Testing** : Unit Tests + Widget Tests + Load Tests (JMeter)
+-   **🌐 Hosting** : Firebase Hosting + Vercel (Multi-CDN)
+
+### 📈 Statistiques du Projet
+
+<div align="center">
+
+| Métrique            | Valeur                         |
+| ------------------- | ------------------------------ |
+| 🧪 **Tests**        | 24+ tests automatisés          |
+| 📱 **Plateformes**  | 4 (Web, Android, iOS, Desktop) |
+| 🚀 **Déploiements** | 3 environnements               |
+| 🔒 **Sécurité**     | OAuth2 + Firebase Rules        |
+
+</div>
 
 ## 🚀 Démarrage rapide
 
