@@ -103,7 +103,7 @@ jobs:
               run: flutter pub get
 
             - name: 🔨 Build web
-              run: flutter build web --release --web canvaskit
+              run: flutter build web --release
 
             - name: 📤 Upload web build
               uses: actions/upload-artifact@v4
