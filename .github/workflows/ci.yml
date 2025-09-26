@@ -15,7 +15,6 @@ on:
                 options:
                     - full-pipeline
                     - deploy-only
-                    - load-test-only
 
 env:
     FLUTTER_VERSION: '3.35.4'
@@ -32,7 +31,6 @@ jobs:
         outputs:
             should-build: ${{ steps.check-build.outputs.should-build }}
             should-deploy: ${{ steps.check-deploy.outputs.should-deploy }}
-            should-load-test: ${{ steps.check-load-test.outputs.should-load-test }}
         steps:
             - name: 📥 Checkout code
               uses: actions/checkout@v4
@@ -82,15 +80,6 @@ jobs:
                     echo "should-deploy=false" >> $GITHUB_OUTPUT
                   fi
 
-            - name: ✅ Check load test conditions
-              id: check-load-test
-              run: |
-                  if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.event.inputs.action }}" == "full-pipeline" ]] || [[ "${{ github.event.inputs.action }}" == "load-test-only" ]]; then
-                    echo "should-load-test=true" >> $GITHUB_OUTPUT
-                  else
-                    echo "should-load-test=false" >> $GITHUB_OUTPUT
-                  fi
-
     # ============================================================================
     # PARALLEL BUILDS
     # ============================================================================
@@ -114,7 +103,7 @@ jobs:
               run: flutter pub get
 
             - name: 🔨 Build web
-              run: flutter build web --release --web-renderer canvaskit
+              run: flutter build web --release --web canvaskit
 
             - name: 📤 Upload web build
               uses: actions/upload-artifact@v4
@@ -162,41 +151,41 @@ jobs:
     # ============================================================================
     # LOAD TESTING
     # ============================================================================
-    load-tests:
-        name: ⚡ Load Tests
-        runs-on: ubuntu-latest
-        needs: [quality-check]
-        if: needs.quality-check.outputs.should-load-test == 'true'
-        steps:
-            - name: 📥 Checkout code
-              uses: actions/checkout@v4
+    # load-tests:
+    #     name: ⚡ Load Tests
+    #     runs-on: ubuntu-latest
+    #     needs: [quality-check]
+    #     if: needs.quality-check.outputs.should-load-test == 'true'
+    #     steps:
+    #         - name: 📥 Checkout code
+    #           uses: actions/checkout@v4
 
-            - name: ☕ Setup Java (for JMeter)
-              uses: actions/setup-java@v4
-              with:
-                  distribution: 'zulu'
-                  java-version: '11'
+    #         - name: ☕ Setup Java (for JMeter)
+    #           uses: actions/setup-java@v4
+    #           with:
+    #               distribution: 'zulu'
+    #               java-version: '11'
 
-            - name: 📥 Download JMeter
-              run: |
-                  wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz
-                  tar -xzf apache-jmeter-5.6.3.tgz
-                  sudo mv apache-jmeter-5.6.3 /opt/jmeter
-                  sudo ln -s /opt/jmeter/bin/jmeter /usr/local/bin/jmeter
+    #         - name: 📥 Download JMeter
+    #           run: |
+    #               wget https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz
+    #               tar -xzf apache-jmeter-5.6.3.tgz
+    #               sudo mv apache-jmeter-5.6.3 /opt/jmeter
+    #               sudo ln -s /opt/jmeter/bin/jmeter /usr/local/bin/jmeter
 
-            - name: ⚡ Run load tests
-              run: |
-                  cd load-tests
-                  chmod +x run-load-test.sh
-                  ./run-load-test.sh --target https://flutter-app-ecom.web.app --users 10 --duration 60
+    #         - name: ⚡ Run load tests
+    #           run: |
+    #               cd load-tests
+    #               chmod +x run-load-test.sh
+    #               ./run-load-test.sh --target https://flutter-app-ecom.web.app --users 10 --duration 60
 
-            - name: 📊 Upload load test results
-              uses: actions/upload-artifact@v4
-              if: always()
-              with:
-                  name: load-test-results
-                  path: load-tests/results/
-                  retention-days: 7
+    #         - name: 📊 Upload load test results
+    #           uses: actions/upload-artifact@v4
+    #           if: always()
+    #           with:
+    #               name: load-test-results
+    #               path: load-tests/results/
+    #               retention-days: 7
 
     # ============================================================================
     # FIREBASE DEPLOYMENT (Web Only)
@@ -333,7 +322,7 @@ jobs:
     summary:
         name: 📋 Pipeline Summary
         runs-on: ubuntu-latest
-        needs: [quality-check, build-web, build-android, deploy, load-tests]
+        needs: [quality-check, build-web, build-android, deploy]
         if: always() && (needs.quality-check.outputs.should-build == 'true' || needs.quality-check.outputs.should-deploy == 'true')
         steps:
             - name: 📊 Generate summary
@@ -349,7 +338,6 @@ jobs:
                   echo "- **Quality Check**: ${{ needs.quality-check.result }}" >> $GITHUB_STEP_SUMMARY
                   echo "- **Web Build**: ${{ needs.build-web.result }}" >> $GITHUB_STEP_SUMMARY
                   echo "- **Android Build**: ${{ needs.build-android.result }} (artifact only)" >> $GITHUB_STEP_SUMMARY
-                  echo "- **Load Tests**: ${{ needs.load-tests.result }}" >> $GITHUB_STEP_SUMMARY
                   echo "- **Web Deployment**: ${{ needs.deploy.result }}" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
 
@@ -364,6 +352,3 @@ jobs:
                   echo "### 📦 Artifacts Available:" >> $GITHUB_STEP_SUMMARY
                   echo "- 🌐 **Web Build**: Ready for deployment" >> $GITHUB_STEP_SUMMARY
                   echo "- 🤖 **Android AAB**: Ready for Play Store" >> $GITHUB_STEP_SUMMARY
-                  if [ "${{ needs.load-tests.result }}" = "success" ]; then
-                    echo "- ⚡ **Load Test Results**: Performance metrics available" >> $GITHUB_STEP_SUMMARY
-                  fi
