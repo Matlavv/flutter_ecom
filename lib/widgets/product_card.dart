@@ -66,7 +66,7 @@ class ProductCard extends ConsumerWidget {
                             color: Theme.of(context)
                                 .colorScheme
                                 .primary
-                                .withOpacity(0.1),
+                                .withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -91,7 +91,7 @@ class ProductCard extends ConsumerWidget {
                                 .textTheme
                                 .bodySmall
                                 ?.color
-                                ?.withOpacity(0.8)),
+                                ?.withValues(alpha: 0.8)),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -199,8 +199,8 @@ class ProductCard extends ConsumerWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Theme.of(context).colorScheme.primary.withOpacity(0.08),
-            Theme.of(context).colorScheme.primary.withOpacity(0.04),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.04),
           ],
         ),
       ),

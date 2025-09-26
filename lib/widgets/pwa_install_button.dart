@@ -65,7 +65,7 @@ class _PWAInstallButtonState extends State<PWAInstallButton> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -92,7 +92,7 @@ class _PWAInstallButtonState extends State<PWAInstallButton> {
                       Text(
                         'Accès rapide depuis votre écran d\'accueil',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.withValues(alpha: 0.9),
                           fontSize: 12,
                         ),
                       ),

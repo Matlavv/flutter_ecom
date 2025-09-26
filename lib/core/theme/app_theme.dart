@@ -48,8 +48,7 @@ class AppTheme {
       ),
 
       // Card Theme
-      cardTheme: const CardTheme(
-        // changer en CardThemeData en local, j'ai mis CardTheme pour la CI car elle utilise une ancienne version de Flutter
+      cardTheme: const CardThemeData(
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(14)),
@@ -214,8 +213,7 @@ class AppTheme {
           color: colorScheme.onSurface,
         ),
       ),
-      cardTheme: const CardTheme(
-        // changer en CardThemeData en local, j'ai mis CardTheme pour la CI car elle utilise une ancienne version de Flutter
+      cardTheme: const CardThemeData(
         elevation: 1,
         color: Color(0xFF1A1A1A),
         shape: RoundedRectangleBorder(
