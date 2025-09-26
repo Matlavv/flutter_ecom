@@ -24,6 +24,11 @@ Une application e-commerce complète développée avec Flutter, Firebase et une 
   <p><em>Application mobile Flutter en phase de test sur le Play Store</em></p>
 </div>
 
+<div align="center">
+  <img src="readme/images/play-store-deployment.png" alt="Play store vue" width="300"/>
+  <p><em>Application mobile Flutter en phase de test sur le Play Store</em></p>
+</div>
+
 ## 🌐 Déploiements & Infrastructure
 
 ### 🚀 Production
